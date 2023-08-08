@@ -1,6 +1,7 @@
 import db from "../models";
 require('dotenv').config();
 import _ from 'lodash';
+import emailService from '../services/emailService';
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
@@ -50,17 +51,36 @@ let getAllDoctors = () => {
     })
 }
 
+let checkRequiredFields = (inputData) => {
+    let arr = ['doctorId', 'contentHTML', 'contentMarkdown', 'action',
+        'selectedPrice', 'selectedPayment', 'selectedProvince', 'nameClinic',
+        'addressClinic', 'note', 'specialtyId']
+
+    let isValid = true;
+    let element = '';
+    for (let i = 0; i < arr.length; i++) {
+        if (!inputData[arr[i]]) {
+            isValid = false;
+            element = arr[i];
+            break;
+        }
+    }
+
+    return {
+        isValid: isValid,
+        element: element
+    }
+}
+
 let saveDetailInforDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputData.doctorId || !inputData.contentHTML
-                || !inputData.contentMarkdown || !inputData.action
-                || !inputData.selectedPrice || !inputData.selectedPayment
-                || !inputData.selectedProvince || !inputData.nameClinic
-                || !inputData.addressClinic || !inputData.note) {
+            let checkObj = checkRequiredFields(inputData);
+
+            if (checkObj.isValid === false) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing parameter'
+                    errMessage: `Missing parameter: ${checkObj.element}`
                 })
             } else {
                 //upsert to markdown
@@ -99,6 +119,8 @@ let saveDetailInforDoctor = (inputData) => {
                     doctorInfor.nameClinic = inputData.nameClinic;
                     doctorInfor.addressClinic = inputData.addressClinic;
                     doctorInfor.note = inputData.note;
+                    doctorInfor.specialtyId = inputData.specialtyId;
+                    doctorInfor.clinicId = inputData.clinicId;
                     await doctorInfor.save();
                 } else {
                     //create
@@ -110,6 +132,8 @@ let saveDetailInforDoctor = (inputData) => {
                         nameClinic: inputData.nameClinic,
                         addressClinic: inputData.addressClinic,
                         note: inputData.note,
+                        specialtyId: inputData.specialtyId,
+                        clinicId: inputData.clinicId,
                     })
                 }
 
@@ -207,8 +231,6 @@ let bulkCreateSchedule = (data) => {
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
                     return a.timeType === b.timeType && +a.date === +b.date;
                 });
-
-                console.log('toCreate', toCreate)
 
                 //create data
                 if (toCreate && toCreate.length > 0) {
@@ -352,6 +374,85 @@ let getProfileDoctorById = (inputId) => {
     })
 }
 
+let getListPatientForDoctor = (doctorId, date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId || !date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let data = await db.Booking.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        statusId: 'S2',
+                        date: date
+                    },
+                    include: [
+                        {
+                            model: db.User, as: 'patientData',
+                            attributes: ['email', 'firstName', 'address', 'gender'],
+                            include: [
+                                { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
+                            ],
+                        },
+                        {
+                            model: db.Allcode, as: 'timeTypeDataPatient', attributes: ['valueEn', 'valueVi']
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let sendRemedy = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.doctorId || !data.patientId || !data.timeType) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                //update patient status
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        statusId: 'S2',
+                        patientId: data.patientId,
+                        timeType: data.timeType
+                    },
+                    raw: false
+                })
+
+                if (appointment) {
+                    appointment.statusId = 'S3';
+                    await appointment.save();
+                }
+                //send email remedy
+                await emailService.sendAttachment(data)
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK'
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -361,4 +462,6 @@ module.exports = {
     getScheduleByDate: getScheduleByDate,
     getExtraInforDoctorById: getExtraInforDoctorById,
     getProfileDoctorById: getProfileDoctorById,
+    getListPatientForDoctor: getListPatientForDoctor,
+    sendRemedy: sendRemedy,
 }
