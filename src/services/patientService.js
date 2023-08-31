@@ -103,7 +103,96 @@ let postVerifyBookAppointment = (data) => {
     })
 }
 
+let sendComment = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.doctorId || !data.name || !data.content) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let patient = await db.User.findOne({
+                    where: {
+                        email: data.email,
+                    },
+                    attributes: ['id'],
+                    // include: [
+                    //     {
+                    //         model: db.Booking, as: 'patientData',
+                    //         attributes: ['patientId']
+                    //     },
+                    // ],
+                    raw: false,
+                    nest: true
+                })
+
+                //search status
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        statusId: 'S3',
+                        patientId: patient.id,
+                    },
+                    raw: false
+                })
+
+                if (appointment) {
+                    await db.Comment.create({
+                        doctorId: data.doctorId,
+                        name: data.name,
+                        email: data.email,
+                        content: data.content,
+                    })
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'OK'
+                    })
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Appointment has been activated or does not exist!',
+                    })
+                }
+
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let getListCommentForPatient = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let data = await db.Comment.findAll({
+                    where: {
+                        doctorId: doctorId,
+                    },
+                    raw: false,
+                    nest: true
+                })
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     postBookAppointment: postBookAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
+    sendComment: sendComment,
+    getListCommentForPatient: getListCommentForPatient,
 }
