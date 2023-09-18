@@ -1,17 +1,17 @@
 import db from "../models";
 require('dotenv').config();
 
-let createSpecialty = (data) => {
+let createHandbook = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.name || !data.imageBase64
+            if (!data.name
                 || !data.descriptionHTML || !data.descriptionMarkdown) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             } else {
-                await db.Specialty.create({
+                await db.Handbook.create({
                     name: data.name,
                     image: data.imageBase64,
                     descriptionHTML: data.descriptionHTML,
@@ -28,17 +28,16 @@ let createSpecialty = (data) => {
     })
 }
 
-let getAllSpecialty = () => {
+let getAllHandbook = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let data = await db.Specialty.findAll();
+            let data = await db.Handbook.findAll();
             if (data && data.length > 0) {
                 data.map(item => {
                     item.image = new Buffer(item.image, 'base64').toString('binary');
                     return item;
                 })
             }
-            
             resolve({
                 errCode: 0,
                 errMessage: 'OK!',
@@ -50,43 +49,23 @@ let getAllSpecialty = () => {
     })
 }
 
-
-let getDetailSpecialtyById = (inputId, location) => {
+let getDetailHandbookById = (inputId) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputId || !location) {
+            if (!inputId) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             } else {
-                let data = await db.Specialty.findOne({
+                let data = await db.Handbook.findOne({
                     where: {
                         id: inputId
                     },
-                    attributes: ['descriptionHTML', 'descriptionMarkdown'],
+                    attributes: ['descriptionHTML','image', 'descriptionMarkdown'],
                 })
 
-                if (data) {
-                    let doctorSpecialty = [];
-                    if (location === 'ALL') {
-                        doctorSpecialty = await db.Doctor_Infor.findAll({
-                            where: { specialtyId: inputId },
-                            attributes: ['doctorId', 'provinceId'],
-                        })
-                    } else {
-                        //find by location
-                        doctorSpecialty = await db.Doctor_Infor.findAll({
-                            where: {
-                                specialtyId: inputId,
-                                provinceId: location
-                            },
-                            attributes: ['doctorId', 'provinceId'],
-                        })
-                    }
 
-                    data.doctorSpecialty = doctorSpecialty;
-                } else data = {}
                 resolve({
                     errCode: 0,
                     errMessage: 'OK!',
@@ -100,8 +79,7 @@ let getDetailSpecialtyById = (inputId, location) => {
 }
 
 module.exports = {
-    createSpecialty: createSpecialty,
-    getAllSpecialty: getAllSpecialty,
-    getDetailSpecialtyById: getDetailSpecialtyById,
-
+    createHandbook: createHandbook,
+    getAllHandbook:getAllHandbook,
+    getDetailHandbookById:getDetailHandbookById,
 }
