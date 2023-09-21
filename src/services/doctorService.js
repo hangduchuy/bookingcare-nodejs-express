@@ -462,6 +462,39 @@ let sendRemedy = (data) => {
     })
 }
 
+let getClinicDoctorById = (doctorId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let data = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: doctorId,
+                    },
+                    attributes: ['id', 'doctorId', 'clinicId'],
+                    include: [
+                        { model: db.Clinic, attributes: ['name', 'latitude', 'longitude'] },
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                if (!data) data = {};
+
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -473,4 +506,5 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
+    getClinicDoctorById: getClinicDoctorById,
 }
