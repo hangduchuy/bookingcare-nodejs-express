@@ -1,6 +1,7 @@
+import connectDB from "../config/connectDB";
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
-
+const { Sequelize} = require('sequelize');
 var salt = bcrypt.genSaltSync(10);
 
 let hashUserPassword = (password) => {
@@ -221,7 +222,24 @@ let getAllCodeService = (typeInput) => {
         }
     })
 }
-
+let searchSpecialty = (name) => {
+    return new Promise(async(resolve,reject)=>{
+        try {
+            let results = await db.Specialty.findAll({
+              where: {
+                name: {
+                  [Sequelize.Op.like]: `%${name}%`,
+                },
+              },
+            });
+            resolve(results);
+        }
+        catch(e){
+            reject(e);
+        }
+    })
+}
+  
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -229,4 +247,5 @@ module.exports = {
     deleteUser: deleteUser,
     updateUserData: updateUserData,
     getAllCodeService: getAllCodeService,
+    searchSpecialty:searchSpecialty,
 }

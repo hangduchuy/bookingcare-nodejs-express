@@ -1,5 +1,6 @@
 import userService from "../services/userService";
-
+import db from "../models/index";
+const { Sequelize} = require('sequelize');
 let handleLogin = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
@@ -75,6 +76,32 @@ let getAllcode = async (req, res) => {
     }
 }
 
+// let search = (req,res)=>{
+//     let name=req.query.name;
+//     let result= userService.search(name);
+//     console.log(result);
+//     return res.status(200).json({
+//         errCode: 0,
+//         errMessage: 'OK',
+//         result,
+//     })
+   
+// }
+let search = async (req, res) => {
+    let name = req.query.name;
+    let results= {};
+    results= await userService.searchSpecialty(name);
+    if (results.length === 0) {
+        res.json({
+          errCode: 1,
+          errMessage: `Keyword not found!`
+        });
+      } else {
+        res.json(results);
+      }
+    
+}
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -82,4 +109,5 @@ module.exports = {
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
     getAllcode: getAllcode,
+    search:search,
 }
