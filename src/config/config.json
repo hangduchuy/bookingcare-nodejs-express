@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "8643947",
+    "password": "246938",
     "database": "bookingcare",
     "host": "localhost",
     "dialect": "mysql",
