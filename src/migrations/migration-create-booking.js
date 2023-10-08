@@ -33,6 +33,9 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE
+            },
+            priceId:{
+                type:Sequelize.STRING
             }
         });
     },
