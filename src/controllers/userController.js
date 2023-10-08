@@ -1,5 +1,6 @@
 import userService from "../services/userService";
 import db from "../models/index";
+import moment from 'moment'
 const { Sequelize} = require('sequelize');
 let handleLogin = async (req, res) => {
     let email = req.body.email;
@@ -102,6 +103,70 @@ let search = async (req, res) => {
     
 }
 
+let totalMoney = async (req,res)=>{
+    let totalmoney=0.00;
+    let results= await userService.getTotalMoney();
+    const valuesVi = [];
+
+for (let i = 0; i < results.length; i++) {
+    const innerArray = results[i];
+    for (let j = 0; j < innerArray.length; j++) {
+        const item = innerArray[j];
+        if (item.valueVi) {
+
+            totalmoney+=parseFloat(item.valueVi);
+        }
+    }
+}
+    if(results.length===0){
+        res.json({
+            errCode:1,
+            errMessage:'Data can`t load'
+        })
+    }
+    else{
+        res.json(totalmoney);
+    }
+}
+
+let dataForBarChart = async (req, res) => {
+    let dataChart = Array(12).fill(0);
+    let test;
+    let results = await userService.totalMoneyOnMonthPerYear();
+    if (results.length === 0) {
+        res.json({
+            errCode: 1,
+            errMessage: 'Data can\'t load'
+        });
+        return; // Exit the function early if there's no data
+    }
+
+    
+
+    else{
+        for(let i=0;i<results.length;i++){
+            let inArray=results[i].date;
+            let dateString=moment(parseInt(inArray)).format('L'); 
+            const parts = dateString.split('/');
+            if (parts.length === 3) {
+                // Rearrange the parts to create the desired format 'yyyy/mm/dd'
+                const yyyy = parts[2];
+                const dd = parts[1];
+                const mm = parts[0];
+                const formattedDate = `${yyyy}/${mm}/${dd}`;
+                let date = new Date(formattedDate); // Convert the formatted date string to a Date object
+                let month = date.getMonth();
+                if (dataChart[month] === undefined) {
+                    dataChart[month] = 0;
+                }
+                dataChart[month] += 1;
+                
+        }
+        
+    }
+        res.json(dataChart);
+    }
+}
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -110,4 +175,6 @@ module.exports = {
     handleDeleteUser: handleDeleteUser,
     getAllcode: getAllcode,
     search:search,
+    totalMoney:totalMoney,
+    dataForBarChart:dataForBarChart,
 }

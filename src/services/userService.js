@@ -1,6 +1,7 @@
 import connectDB from "../config/connectDB";
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
+import moment from 'moment'
 const { Sequelize} = require('sequelize');
 var salt = bcrypt.genSaltSync(10);
 
@@ -240,6 +241,51 @@ let searchSpecialty = (name) => {
     })
 }
   
+let getTotalMoney = () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let res =[];
+        let bookingResults = await db.Booking.findAll();
+  
+        if (bookingResults.length > 0) {
+          for (let i = 0; i < bookingResults.length; i++) {
+            const booking = bookingResults[i];
+            if (booking.priceId !== undefined) {
+              let results = await db.Allcode.findAll({
+                where: { key: booking.priceId },
+                attributes: ['valueVi'], // Chỉ lấy trường 'valueEn'
+              });
+  
+  
+              res.push(results);
+            } else {
+              resolve('Data is empty'
+              );
+              return; // Dừng vòng lặp nếu có lỗi
+            }
+          }
+          resolve(res);
+        } else {
+          resolve('Booking data is empty'
+          );
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+let totalMoneyOnMonthPerYear=()=>{
+    return new Promise(async (resolve,reject)=>{
+        try{
+            let results=await db.Booking.findAll();
+            resolve(results)
+        }
+        catch{
+            reject(e);
+        }
+    })
+}
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -248,4 +294,6 @@ module.exports = {
     updateUserData: updateUserData,
     getAllCodeService: getAllCodeService,
     searchSpecialty:searchSpecialty,
+    getTotalMoney:getTotalMoney,
+    totalMoneyOnMonthPerYear:totalMoneyOnMonthPerYear,
 }
