@@ -34,7 +34,7 @@ let getAllHandbook = () => {
             let data = await db.Handbook.findAll();
             if (data && data.length > 0) {
                 data.map(item => {
-                    item.image = new Buffer(item.image, 'base64').toString('binary');
+                    item.image = Buffer.from(item.image, 'base64').toString('binary');
                     return item;
                 })
             }
@@ -62,7 +62,7 @@ let getDetailHandbookById = (inputId) => {
                     where: {
                         id: inputId
                     },
-                    attributes: ['descriptionHTML','image', 'descriptionMarkdown'],
+                    attributes: ['descriptionHTML', 'image', 'descriptionMarkdown'],
                 })
 
 
@@ -80,6 +80,6 @@ let getDetailHandbookById = (inputId) => {
 
 module.exports = {
     createHandbook: createHandbook,
-    getAllHandbook:getAllHandbook,
-    getDetailHandbookById:getDetailHandbookById,
+    getAllHandbook: getAllHandbook,
+    getDetailHandbookById: getDetailHandbookById,
 }
