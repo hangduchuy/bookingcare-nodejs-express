@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         date: DataTypes.STRING,
         timeType: DataTypes.STRING,
         token: DataTypes.STRING,
+        priceId:DataTypes.STRING,
     }, {
         sequelize,
         modelName: 'Booking',
