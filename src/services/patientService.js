@@ -41,8 +41,11 @@ let postBookAppointment = (data) => {
                 })
                 //create a booking record
                 if (user && user[0]) {
-                    await db.Booking.findOrCreate({
-                        where: { patientId: user[0].id },
+                    let booking = await db.Booking.findOrCreate({
+                        where: {
+                            patientId: user[0].id,
+                            date: data.date,
+                        },
                         defaults: {
                             statusId: 'S1',
                             doctorId: data.doctorId,

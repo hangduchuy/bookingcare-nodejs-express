@@ -26,6 +26,8 @@
     "momentjs": "^2.0.0",
     "mysql2": "^2.2.5",
     "nodemailer": "6.6.3",
+    "pg": "8.7.1",
+    "pg-hstore": "2.3.4",
     "sequelize": "^6.6.2",
     "uuid": "8.3.2"
   },
@@ -35,5 +37,9 @@
     "@babel/preset-env": "7.22.5",
     "nodemon": "^2.0.7",
     "sequelize-cli": "^6.2.0"
+  },
+  "engines": {
+    "node": "14.17.0",
+    "npm": "6.14.13"
   }
 }

@@ -23,6 +23,12 @@ module.exports = {
             image: {
                 type: Sequelize.BLOB('long'),
             },
+            latitude: {
+                type: Sequelize.STRING
+            },
+            longitude: {
+                type: Sequelize.STRING
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE
