@@ -53,6 +53,8 @@ let initWebRoutes = (app) => {
     router.get('/api/get-handbooks', handBookController.getAllHandbook);
     router.get('/api/get-detail-handbook-by-id', handBookController.getDetailHandbookById);
     
+    router.get('/api/get-All-Customer', userController.getAllCustomer);
+    
     router.get("/api/search",userController.search)
     return app.use("/", router);
 }

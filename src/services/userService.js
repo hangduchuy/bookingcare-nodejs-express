@@ -286,6 +286,17 @@ let totalMoneyOnMonthPerYear=()=>{
         }
     })
 }
+let getTotalCustomer=()=>{
+    return new Promise(async (resolve,reject)=>{
+        try{
+            let results=await db.Booking.findAll();
+            resolve(results)
+        }
+        catch{
+            reject(e);
+        }
+    })
+}
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -296,4 +307,5 @@ module.exports = {
     searchSpecialty:searchSpecialty,
     getTotalMoney:getTotalMoney,
     totalMoneyOnMonthPerYear:totalMoneyOnMonthPerYear,
+    getTotalCustomer:getTotalCustomer,
 }
