@@ -131,7 +131,6 @@ for (let i = 0; i < results.length; i++) {
 
 let dataForBarChart = async (req, res) => {
     let dataChart = Array(12).fill(0);
-    let test;
     let results = await userService.totalMoneyOnMonthPerYear();
     if (results.length === 0) {
         res.json({
@@ -140,9 +139,6 @@ let dataForBarChart = async (req, res) => {
         });
         return; // Exit the function early if there's no data
     }
-
-    
-
     else{
         for(let i=0;i<results.length;i++){
             let inArray=results[i].date;
@@ -167,6 +163,16 @@ let dataForBarChart = async (req, res) => {
         res.json(dataChart);
     }
 }
+let getAllCustomer = async (req, res) => {
+    try {
+        const results = await userService.getTotalCustomer();
+        const count = results.length;
+
+        res.json({ count: count });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while counting customers.' });
+    }
+}
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -177,4 +183,5 @@ module.exports = {
     search:search,
     totalMoney:totalMoney,
     dataForBarChart:dataForBarChart,
+    getAllCustomer:getAllCustomer,
 }
