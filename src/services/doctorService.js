@@ -117,7 +117,6 @@ let saveDetailInforDoctor = (inputData) => {
                     where: { doctorId: inputData.doctorId },
                     raw: false
                 })
-
                 if (doctorInfor) {
                     //update
                     doctorInfor.doctorId = inputData.doctorId;
@@ -132,7 +131,10 @@ let saveDetailInforDoctor = (inputData) => {
                     await doctorInfor.save();
                 } else {
                     //create
+                    const maxId = await db.Doctor_Infor.max('id');
+                    const newId = maxId + 1;
                     await db.Doctor_Infor.create({
+                        id: newId,
                         doctorId: inputData.doctorId,
                         priceId: inputData.selectedPrice,
                         paymentId: inputData.selectedPayment,

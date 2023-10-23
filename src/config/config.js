@@ -6,7 +6,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE_NAME,
     host: process.env.DB_HOST,
-    dialect: "postgres",
+    dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
       "raw": true
@@ -24,7 +24,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE_NAME,
     host: process.env.DB_HOST,
-    dialect: "postgres",
+    dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
       "raw": true
@@ -42,7 +42,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE_NAME,
     host: process.env.DB_HOST,
-    dialect: "postgres",
+    dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
       "raw": true
