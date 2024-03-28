@@ -1,31 +1,38 @@
-import db from "../models";
-require('dotenv').config();
-import emailService from './emailService';
-import { v4 as uuidv4 } from 'uuid';
+import db from '../models'
+require('dotenv').config()
+import emailService from './emailService'
+import { v4 as uuidv4 } from 'uuid'
 
 let buildUrlEmail = (doctorId, token) => {
     let result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${doctorId}`
-    return result;
+    return result
 }
 
 let postBookAppointment = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.doctorId || !data.timeType || !data.date
-                || !data.fullName || !data.selectedGender || !data.address) {
+            if (
+                !data.email ||
+                !data.doctorId ||
+                !data.timeType ||
+                !data.date ||
+                !data.fullName ||
+                !data.selectedGender ||
+                !data.address
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             } else {
-                let token = uuidv4();
+                let token = uuidv4()
                 await emailService.sendSimpleEmail({
                     receiverEmail: data.email,
                     patientName: data.fullName,
                     time: data.timeString,
                     doctorName: data.doctorName,
                     language: data.language,
-                    redirectLink: buildUrlEmail(data.doctorId, token),
+                    redirectLink: buildUrlEmail(data.doctorId, token)
                 })
 
                 //upsert patient
@@ -36,15 +43,17 @@ let postBookAppointment = (data) => {
                         roleId: 'R3',
                         gender: data.selectedGender,
                         address: data.address,
-                        firstName: data.fullName
+                        firstName: data.fullName,
+                        phonenumber: data.phonenumber
                     }
                 })
+
                 //create a booking record
                 if (user && user[0]) {
                     let booking = await db.Booking.findOrCreate({
                         where: {
                             patientId: user[0].id,
-                            date: '' + data.date,
+                            date: '' + data.date
                         },
                         defaults: {
                             statusId: 'S1',
@@ -52,13 +61,24 @@ let postBookAppointment = (data) => {
                             patientId: user[0].id,
                             date: data.date,
                             timeType: data.timeType,
-                            token: token,
+                            token: token
+                        }
+                    })
+
+                    let patient = await db.Patient_Infor.findOrCreate({
+                        where: {
+                            patientId: user[0].id
+                        },
+                        defaults: {
+                            patientId: user[0].id,
+                            birthday: data.birthday,
+                            reason: data.reason
                         }
                     })
                 }
                 resolve({
                     errCode: 0,
-                    errMessage: 'Save infor patient succeed!',
+                    errMessage: 'Save infor patient succeed!'
                 })
             }
         } catch (e) {
@@ -80,25 +100,24 @@ let postVerifyBookAppointment = (data) => {
                     where: {
                         doctorId: data.doctorId,
                         token: data.token,
-                        statusId: 'S1',
+                        statusId: 'S1'
                     },
                     raw: false
                 })
 
                 if (appointment) {
-                    appointment.statusId = 'S2';
-                    await appointment.save();
+                    appointment.statusId = 'S2'
+                    await appointment.save()
                     resolve({
                         errCode: 0,
-                        errMessage: 'Update the appointment succeed!',
+                        errMessage: 'Update the appointment succeed!'
                     })
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Appointment has been activated or does not exist!',
+                        errMessage: 'Appointment has been activated or does not exist!'
                     })
                 }
-
             }
         } catch (e) {
             reject(e)
@@ -117,7 +136,7 @@ let sendComment = (data) => {
             } else {
                 let patient = await db.User.findOne({
                     where: {
-                        email: data.email,
+                        email: data.email
                     },
                     attributes: ['id'],
                     // include: [
@@ -135,7 +154,7 @@ let sendComment = (data) => {
                     where: {
                         doctorId: data.doctorId,
                         statusId: 'S3',
-                        patientId: patient.id,
+                        patientId: patient.id
                     },
                     raw: false
                 })
@@ -145,7 +164,7 @@ let sendComment = (data) => {
                         doctorId: data.doctorId,
                         name: data.name,
                         email: data.email,
-                        content: data.content,
+                        content: data.content
                     })
                     resolve({
                         errCode: 0,
@@ -154,10 +173,9 @@ let sendComment = (data) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: 'Appointment has been activated or does not exist!',
+                        errMessage: 'Appointment has been activated or does not exist!'
                     })
                 }
-
             }
         } catch (e) {
             reject(e)
@@ -176,7 +194,7 @@ let getListCommentForPatient = (doctorId) => {
             } else {
                 let data = await db.Comment.findAll({
                     where: {
-                        doctorId: doctorId,
+                        doctorId: doctorId
                     },
                     raw: false,
                     nest: true
@@ -193,9 +211,75 @@ let getListCommentForPatient = (doctorId) => {
     })
 }
 
+let getDetailPatientById = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let data = await db.Patient_Infor.findOne({
+                    where: {
+                        patientId: inputId
+                    },
+                    raw: false,
+                    nest: true
+                })
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let editDetailPatient = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.patientId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let patientInfor = await db.Patient_Infor.findOne({
+                    where: { patientId: data.patientId },
+                    raw: false
+                })
+                if (patientInfor) {
+                    // thêm -F để biết chưa xác nhận từ Hộ lí
+                    let PendingDoctorRequest = data.doctorRequest.map((item) => item + '-F')
+                    // kết thúc bằng '-T' đã hoàn thành và ko thay đổi
+                    let newDoctorRequests = patientInfor.doctorRequest.filter((item) => item.includes('-T'))
+
+                    //update
+                    patientInfor.reason = data.reason
+                    patientInfor.statusUpdate = data.statusUpdate
+                    patientInfor.doctorRequest = [...PendingDoctorRequest, ...newDoctorRequests]
+                    await patientInfor.save()
+                }
+
+                resolve({
+                    errCode: 0,
+                    errMessage: 'edit infor patient succeed!'
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     postBookAppointment: postBookAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
     sendComment: sendComment,
     getListCommentForPatient: getListCommentForPatient,
+    getDetailPatientById: getDetailPatientById,
+    editDetailPatient: editDetailPatient
 }

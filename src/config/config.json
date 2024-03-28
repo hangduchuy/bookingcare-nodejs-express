@@ -1,34 +1,28 @@
 {
-    "development": {
-        "username": "nrxyjwucgyxcji",
-        "password": "f9354e64be00e2a0fa640e64adb615d74f529f4a8c67b0e4e14c93e6ccc60138",
-        "database": "df12cqf04l029g",
-        "host": "ec2-44-193-237-184.compute-1.amazonaws.com",
-        "dialect": "postgres",
-        "logging": false,
-        "query": {
-            "raw": true
-        },
-        "timezone": "+07:00",
-        "dialectOptions": {
-            "ssl": {
-                "require": true,
-                "rejectUnauthorized": false
-            }
-        }
+  "development": {
+    "username": "postgres",
+    "password": "123123",
+    "database": "bookingcare",
+    "host": "localhost",
+    "dialect": "postgres",
+    "logging": false,
+    "query": {
+      "raw": true
     },
-    "test": {
-        "username": "root",
-        "password": null,
-        "database": "database_test",
-        "host": "127.0.0.1",
-        "dialect": "postgres"
-    },
-    "production": {
-        "username": "root",
-        "password": null,
-        "database": "database_production",
-        "host": "127.0.0.1",
-        "dialect": "postgres"
-    }
+    "timezone": "+07:00"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
 }
