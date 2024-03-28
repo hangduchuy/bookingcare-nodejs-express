@@ -1,9 +1,9 @@
-import db from "../models";
-require('dotenv').config();
-import _ from 'lodash';
-import emailService from '../services/emailService';
+import db from '../models'
+require('dotenv').config()
+import _ from 'lodash'
+import emailService from '../services/emailService'
 
-const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 
 let getTopDoctorHome = (limitInput) => {
     return new Promise(async (resolve, reject) => {
@@ -21,21 +21,19 @@ let getTopDoctorHome = (limitInput) => {
                     {
                         model: db.Doctor_Infor,
                         attributes: ['specialtyId'],
-                        include: [
-                            { model: db.Specialty, attributes: ['name'] },
-                        ]
-                    },
+                        include: [{ model: db.Specialty, attributes: ['name'] }]
+                    }
                 ],
 
                 raw: true,
                 nest: true
-            });
+            })
             resolve({
                 errCode: 0,
                 data: users
-            });
+            })
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -47,7 +45,7 @@ let getAllDoctors = () => {
                 where: { roleId: 'R2' },
                 attributes: {
                     exclude: ['password']
-                },
+                }
             })
             resolve({
                 errCode: 0,
@@ -60,17 +58,27 @@ let getAllDoctors = () => {
 }
 
 let checkRequiredFields = (inputData) => {
-    let arr = ['doctorId', 'contentHTML', 'contentMarkdown', 'action',
-        'selectedPrice', 'selectedPayment', 'selectedProvince', 'nameClinic',
-        'addressClinic', 'note', 'specialtyId']
+    let arr = [
+        'doctorId',
+        'contentHTML',
+        'contentMarkdown',
+        'action',
+        'selectedPrice',
+        'selectedPayment',
+        'selectedProvince',
+        'nameClinic',
+        'addressClinic',
+        'note',
+        'specialtyId'
+    ]
 
-    let isValid = true;
-    let element = '';
+    let isValid = true
+    let element = ''
     for (let i = 0; i < arr.length; i++) {
         if (!inputData[arr[i]]) {
-            isValid = false;
-            element = arr[i];
-            break;
+            isValid = false
+            element = arr[i]
+            break
         }
     }
 
@@ -83,7 +91,7 @@ let checkRequiredFields = (inputData) => {
 let saveDetailInforDoctor = (inputData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let checkObj = checkRequiredFields(inputData);
+            let checkObj = checkRequiredFields(inputData)
 
             if (checkObj.isValid === false) {
                 resolve({
@@ -97,7 +105,7 @@ let saveDetailInforDoctor = (inputData) => {
                         contentHTML: inputData.contentHTML,
                         contentMarkdown: inputData.contentMarkdown,
                         description: inputData.description,
-                        doctorId: inputData.doctorId,
+                        doctorId: inputData.doctorId
                     })
                 } else if (inputData.action === 'EDIT') {
                     let doctorMarkdown = await db.Markdown.findOne({
@@ -105,10 +113,10 @@ let saveDetailInforDoctor = (inputData) => {
                         raw: false
                     })
                     if (doctorMarkdown) {
-                        doctorMarkdown.contentHTML = inputData.contentHTML;
-                        doctorMarkdown.contentMarkdown = inputData.contentMarkdown;
-                        doctorMarkdown.description = inputData.description;
-                        await doctorMarkdown.save();
+                        doctorMarkdown.contentHTML = inputData.contentHTML
+                        doctorMarkdown.contentMarkdown = inputData.contentMarkdown
+                        doctorMarkdown.description = inputData.description
+                        await doctorMarkdown.save()
                     }
                 }
 
@@ -119,20 +127,20 @@ let saveDetailInforDoctor = (inputData) => {
                 })
                 if (doctorInfor) {
                     //update
-                    doctorInfor.doctorId = inputData.doctorId;
-                    doctorInfor.priceId = inputData.selectedPrice;
-                    doctorInfor.paymentId = inputData.selectedPayment;
-                    doctorInfor.provinceId = inputData.selectedProvince;
-                    doctorInfor.nameClinic = inputData.nameClinic;
-                    doctorInfor.addressClinic = inputData.addressClinic;
-                    doctorInfor.note = inputData.note;
-                    doctorInfor.specialtyId = inputData.specialtyId;
-                    doctorInfor.clinicId = inputData.clinicId;
-                    await doctorInfor.save();
+                    doctorInfor.doctorId = inputData.doctorId
+                    doctorInfor.priceId = inputData.selectedPrice
+                    doctorInfor.paymentId = inputData.selectedPayment
+                    doctorInfor.provinceId = inputData.selectedProvince
+                    doctorInfor.nameClinic = inputData.nameClinic
+                    doctorInfor.addressClinic = inputData.addressClinic
+                    doctorInfor.note = inputData.note
+                    doctorInfor.specialtyId = inputData.specialtyId
+                    doctorInfor.clinicId = inputData.clinicId
+                    await doctorInfor.save()
                 } else {
                     //create
-                    const maxId = await db.Doctor_Infor.max('id');
-                    const newId = maxId + 1;
+                    const maxId = await db.Doctor_Infor.max('id')
+                    const newId = maxId + 1
                     await db.Doctor_Infor.create({
                         id: newId,
                         doctorId: inputData.doctorId,
@@ -143,7 +151,7 @@ let saveDetailInforDoctor = (inputData) => {
                         addressClinic: inputData.addressClinic,
                         note: inputData.note,
                         specialtyId: inputData.specialtyId,
-                        clinicId: inputData.clinicId,
+                        clinicId: inputData.clinicId
                     })
                 }
 
@@ -161,7 +169,6 @@ let saveDetailInforDoctor = (inputData) => {
 let getDetailDoctorByIdService = (inputId) => {
     return new Promise(async (resolve, reject) => {
         try {
-
             if (!inputId) {
                 resolve({
                     errCode: 1,
@@ -181,7 +188,8 @@ let getDetailDoctorByIdService = (inputId) => {
                             attributes: ['description', 'contentHTML', 'contentMarkdown']
                         },
                         {
-                            model: db.Allcode, as: 'positionData',
+                            model: db.Allcode,
+                            as: 'positionData',
                             attributes: ['valueEn', 'valueVi']
                         },
                         {
@@ -192,17 +200,17 @@ let getDetailDoctorByIdService = (inputId) => {
                             include: [
                                 { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] },
-                                { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                                { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] }
                             ]
-                        },
+                        }
                     ],
                     raw: false,
                     nest: true
                 })
                 if (data && data.image) {
-                    data.image = Buffer.from(data.image, 'base64').toString('binary');
+                    data.image = Buffer.from(data.image, 'base64').toString('binary')
                 }
-                if (!data) data = {};
+                if (!data) data = {}
                 resolve({
                     errCode: 0,
                     data: data
@@ -223,34 +231,34 @@ let bulkCreateSchedule = (data) => {
                     errMessage: 'Missing parameter'
                 })
             } else {
-                let schedule = data.arrSchedule;
+                let schedule = data.arrSchedule
                 if (schedule && schedule.length > 0) {
-                    schedule = schedule.map(item => {
-                        item.maxNumber = MAX_NUMBER_SCHEDULE;
-                        return item;
+                    schedule = schedule.map((item) => {
+                        item.maxNumber = MAX_NUMBER_SCHEDULE
+                        return item
                     })
-                };
+                }
 
                 // get all existing data
                 let existing = await db.Schedule.findAll({
                     where: { doctorId: data.doctorId, date: '' + data.formatedDate },
                     attributes: ['timeType', 'date', 'doctorId', 'maxNumber'],
                     raw: true
-                });
+                })
 
                 //compare different
                 let toCreate = _.differenceWith(schedule, existing, (a, b) => {
-                    return a.timeType === b.timeType && +a.date === +b.date;
-                });
+                    return a.timeType === b.timeType && +a.date === +b.date
+                })
 
                 //create data
                 if (toCreate && toCreate.length > 0) {
-                    await db.Schedule.bulkCreate(toCreate);
+                    await db.Schedule.bulkCreate(toCreate)
                 }
 
                 resolve({
                     errCode: 0,
-                    errMessage: "OK"
+                    errMessage: 'OK'
                 })
             }
         } catch (e) {
@@ -275,12 +283,12 @@ let getScheduleByDate = (doctorId, date) => {
                     },
                     include: [
                         { model: db.Allcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
-                        { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
+                        { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] }
                     ],
                     raw: false,
                     nest: true
                 })
-                if (!data) data = [];
+                if (!data) data = []
 
                 resolve({
                     errCode: 0,
@@ -304,7 +312,7 @@ let getExtraInforDoctorById = (doctorId) => {
             } else {
                 let data = await db.Doctor_Infor.findOne({
                     where: {
-                        doctorId: doctorId,
+                        doctorId: doctorId
                     },
                     attributes: {
                         exclude: ['id', 'doctorId']
@@ -312,12 +320,12 @@ let getExtraInforDoctorById = (doctorId) => {
                     include: [
                         { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                         { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] },
-                        { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                        { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] }
                     ],
                     raw: false,
                     nest: true
                 })
-                if (!data) data = {};
+                if (!data) data = {}
 
                 resolve({
                     errCode: 0,
@@ -348,7 +356,8 @@ let getProfileDoctorById = (inputId) => {
                     },
                     include: [
                         {
-                            model: db.Allcode, as: 'positionData',
+                            model: db.Allcode,
+                            as: 'positionData',
                             attributes: ['valueEn', 'valueVi']
                         },
                         {
@@ -359,21 +368,21 @@ let getProfileDoctorById = (inputId) => {
                             include: [
                                 { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'provinceTypeData', attributes: ['valueEn', 'valueVi'] },
-                                { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                                { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] }
                             ]
                         },
                         {
                             model: db.Markdown,
                             attributes: ['description', 'contentHTML', 'contentMarkdown']
-                        },
+                        }
                     ],
                     raw: false,
                     nest: true
                 })
                 if (data && data.image) {
-                    data.image = Buffer.from(data.image, 'base64').toString('binary');
+                    data.image = Buffer.from(data.image, 'base64').toString('binary')
                 }
-                if (!data) data = {};
+                if (!data) data = {}
                 resolve({
                     errCode: 0,
                     data: data
@@ -402,14 +411,15 @@ let getListPatientForDoctor = (doctorId, date) => {
                     },
                     include: [
                         {
-                            model: db.User, as: 'patientData',
-                            attributes: ['email', 'firstName', 'address', 'gender'],
-                            include: [
-                                { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
-                            ],
+                            model: db.User,
+                            as: 'patientData',
+                            attributes: ['email', 'firstName', 'address', 'gender', 'phonenumber'],
+                            include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }]
                         },
                         {
-                            model: db.Allcode, as: 'timeTypeDataPatient', attributes: ['valueEn', 'valueVi']
+                            model: db.Allcode,
+                            as: 'timeTypeDataPatient',
+                            attributes: ['valueEn', 'valueVi']
                         }
                     ],
                     raw: false,
@@ -448,8 +458,8 @@ let sendRemedy = (data) => {
                 })
 
                 if (appointment) {
-                    appointment.statusId = 'S3';
-                    await appointment.save();
+                    appointment.statusId = 'S3'
+                    await appointment.save()
                 }
                 //send email remedy
                 await emailService.sendAttachment(data)
@@ -475,16 +485,14 @@ let getClinicDoctorById = (doctorId) => {
             } else {
                 let data = await db.Doctor_Infor.findOne({
                     where: {
-                        doctorId: doctorId,
+                        doctorId: doctorId
                     },
                     attributes: ['id', 'doctorId', 'clinicId'],
-                    include: [
-                        { model: db.Clinic, attributes: ['name', 'latitude', 'longitude'] },
-                    ],
+                    include: [{ model: db.Clinic, attributes: ['name', 'latitude', 'longitude'] }],
                     raw: false,
                     nest: true
                 })
-                if (!data) data = {};
+                if (!data) data = {}
 
                 resolve({
                     errCode: 0,
@@ -508,5 +516,5 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
-    getClinicDoctorById: getClinicDoctorById,
+    getClinicDoctorById: getClinicDoctorById
 }

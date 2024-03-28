@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config();
 
 module.exports = {
   development: {
@@ -9,15 +9,15 @@ module.exports = {
     dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
-      "raw": true
+      raw: true,
     },
     timezone: "+07:00",
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    }
+    // dialectOptions: {
+    //   ssl: {
+    //     require: true,
+    //     rejectUnauthorized: false
+    //   }
+    // }
   },
   test: {
     username: process.env.DB_USERNAME,
@@ -27,15 +27,15 @@ module.exports = {
     dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
-      "raw": true
+      raw: true,
     },
     timezone: "+07:00",
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false
-      }
-    }
+        rejectUnauthorized: false,
+      },
+    },
   },
   production: {
     username: process.env.DB_USERNAME,
@@ -45,14 +45,14 @@ module.exports = {
     dialect: process.env.DB_DIALECT,
     logging: false,
     query: {
-      "raw": true
+      raw: true,
     },
     timezone: "+07:00",
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false
-      }
-    }
-  }
-}
+        rejectUnauthorized: false,
+      },
+    },
+  },
+};
