@@ -47,7 +47,7 @@ let postBookAppointment = (data) => {
                         phonenumber: data.phonenumber
                     }
                 })
-
+                console.log(data);
                 //create a booking record
                 if (user && user[0]) {
                     let booking = await db.Booking.findOrCreate({
@@ -62,6 +62,7 @@ let postBookAppointment = (data) => {
                             date: data.date,
                             timeType: data.timeType,
                             token: token
+
                         }
                     })
 
