@@ -1,45 +1,47 @@
 {
-  "name": "nodejs",
-  "version": "1.0.0",
-  "description": "backend nodejs",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec npx babel-node src/server.js"
-  },
-  "keywords": [
-    "fullstack",
-    "nodejs",
-    "express"
-  ],
-  "author": "Huy",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "body-parser": "1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "ejs": "^3.1.5",
-    "express": "^4.17.1",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.4",
-    "momentjs": "^2.0.0",
-    "mysql2": "^2.2.5",
-    "nodemailer": "6.6.3",
-    "pg": "8.7.1",
-    "pg-hstore": "2.3.4",
-    "sequelize": "^6.6.2",
-    "uuid": "8.3.2"
-  },
-  "devDependencies": {
-    "@babel/core": "7.22.5",
-    "@babel/node": "7.22.5",
-    "@babel/preset-env": "7.22.5",
-    "nodemon": "^2.0.7",
-    "sequelize-cli": "^6.2.0"
-  },
-  "engines": {
-    "node": "14.17.0",
-    "npm": "6.14.13"
-  }
+    "name": "nodejs",
+    "version": "1.0.0",
+    "description": "backend nodejs",
+    "main": "server.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "nodemon --exec npx babel-node src/server.js",
+        "build-src": "babel src -d build --copy-files",
+        "build": "node build/server.js"
+    },
+    "keywords": [
+        "fullstack",
+        "nodejs",
+        "express"
+    ],
+    "author": "Huy",
+    "license": "ISC",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "body-parser": "1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^8.2.0",
+        "ejs": "^3.1.5",
+        "express": "^4.17.1",
+        "lodash": "^4.17.21",
+        "moment": "^2.29.4",
+        "momentjs": "^2.0.0",
+        "mysql2": "^2.2.5",
+        "nodemailer": "6.6.3",
+        "pg": "8.7.1",
+        "pg-hstore": "2.3.4",
+        "sequelize": "^6.6.2",
+        "uuid": "8.3.2"
+    },
+    "devDependencies": {
+        "@babel/core": "7.22.5",
+        "@babel/node": "7.22.5",
+        "@babel/preset-env": "7.22.5",
+        "nodemon": "^2.0.7",
+        "sequelize-cli": "^6.2.0"
+    },
+    "engines": {
+        "node": "14.17.0",
+        "npm": "6.14.13"
+    }
 }
