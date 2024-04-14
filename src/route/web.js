@@ -6,6 +6,7 @@ import patientController from '../controllers/patientController'
 import specialtyController from '../controllers/specialtyController'
 import clinicController from '../controllers/clinicController'
 import handBookController from '../controllers/handBookController'
+import assistantController from '../controllers/assistantController'
 const PaymentRouter = require('./PaymentRouter')
 
 let router = express.Router()
@@ -37,16 +38,17 @@ let initWebRoutes = (app) => {
     router.get('/api/get-extra-infor-doctor-by-id', doctorController.getExtraInforDoctorById)
     router.get('/api/get-profile-doctor-by-id', doctorController.getProfileDoctorById)
     router.get('/api/get-list-patient-for-doctor', doctorController.getListPatientForDoctor)
+    router.get('/api/get-list-patient',doctorController.getListPatient)
     router.post('/api/send-remedy', doctorController.sendRemedy)
     router.get('/api/get-clinic-doctor-by-id', doctorController.getClinicDoctorById)
-
+    router.get('/api/get-list-patient',doctorController.getListPatient)
     router.post('/api/patient-book-appointment', patientController.postBookAppointment)
     router.post('/api/verify-book-appointment', patientController.postVerifyBookAppointment)
     router.post('/api/send-comment', patientController.sendComment)
     router.get('/api/get-list-comment-for-patient', patientController.getListCommentForPatient)
     router.get('/api/get-detail-patient-by-id', patientController.getDetailPatientById)
     router.post('/api/edit-detail-patient', patientController.editDetailPatient)
-
+    router.post('/api/update-patient-info',assistantController.UpdatePatient_Info)
     router.post('/api/create-new-specialty', specialtyController.createSpecialty)
     router.get('/api/get-specialty', specialtyController.getAllSpecialty)
     router.get('/api/get-detail-specialty-by-id', specialtyController.getDetailSpecialtyById)
@@ -58,6 +60,11 @@ let initWebRoutes = (app) => {
     router.get('/api/get-handbooks', handBookController.getAllHandbook)
     router.get('/api/get-detail-handbook-by-id', handBookController.getDetailHandbookById)
     router.get('/api/get-All-Customer', userController.getAllCustomer)
+    router.post(`/api/TSPT3`,assistantController.TSPT3)
+    router.post(`/api/TSPT4`,assistantController.TSPT4)
+    router.get('/api/get-list-patient-to-check',assistantController.getListPatientToCheck)
+    router.get(`/api/show-doctor-request`,assistantController.getPendingDoctorRequests)
+    router.post('/api/save-doctor-request',assistantController.saveDoctorRequest)
     app.use('/api/payment', PaymentRouter)
     return app.use('/', router)
 }

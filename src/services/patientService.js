@@ -255,7 +255,11 @@ let editDetailPatient = (data) => {
                     // thêm -F để biết chưa xác nhận từ Hộ lí
                     let PendingDoctorRequest = data.doctorRequest.map((item) => item + '-F')
                     // kết thúc bằng '-T' đã hoàn thành và ko thay đổi
-                    let newDoctorRequests = patientInfor.doctorRequest.filter((item) => item.includes('-T'))
+                    let newDoctorRequests =[]
+                    if (patientInfor && patientInfor.doctorRequest) {
+                       newDoctorRequests = patientInfor.doctorRequest.filter((item) => item.includes('-T'));
+                        // Tiếp tục xử lý với biến newDoctorRequests đã được lọc
+                    }
 
                     //update
                     patientInfor.reason = data.reason
