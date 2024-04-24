@@ -393,7 +393,7 @@ let getProfileDoctorById = (inputId) => {
         }
     })
 }
-let getListPatient = (date) =>{
+let getListPatient = (date) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!date) {
@@ -405,7 +405,7 @@ let getListPatient = (date) =>{
                 let data = await db.Booking.findAll({
                     where: {
                         date: date,
-                        statusId:'S2',
+                        statusId: 'S2'
                     },
                     include: [
                         {
@@ -558,5 +558,5 @@ module.exports = {
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
     getClinicDoctorById: getClinicDoctorById,
-    getListPatient:getListPatient
+    getListPatient: getListPatient
 }
