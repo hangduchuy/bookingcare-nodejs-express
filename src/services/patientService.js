@@ -223,10 +223,18 @@ let getDetailPatientById = (inputId) => {
                 let data = await db.Patient_Infor.findOne({
                     where: {
                         patientId: inputId
-                    },
+                    }, include: [     
+                        {
+                            model: db.History,
+                            attributes: ['description', 'files'],
+                            
+                        }
+                    ],
                     raw: false,
                     nest: true
-                })
+                }
+            )
+            
                 resolve({
                     errCode: 0,
                     data: data
@@ -279,11 +287,13 @@ let editDetailPatient = (data) => {
     })
 }
 
+
 module.exports = {
     postBookAppointment: postBookAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
     sendComment: sendComment,
     getListCommentForPatient: getListCommentForPatient,
     getDetailPatientById: getDetailPatientById,
-    editDetailPatient: editDetailPatient
+    editDetailPatient: editDetailPatient,
+
 }

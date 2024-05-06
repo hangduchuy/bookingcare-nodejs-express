@@ -73,7 +73,6 @@ let getPendingDoctorRequests = async (req, res) => {
 let saveDoctorRequest = async (req, res) => {
     try {  
         const { id, data } = req.body;
-
         // Kiểm tra xem id có tồn tại và không phải là undefined
         if (!id) {
             return res.status(400).json({

@@ -65,6 +65,9 @@ let initWebRoutes = (app) => {
     router.get('/api/get-list-patient-to-check',assistantController.getListPatientToCheck)
     router.get(`/api/show-doctor-request`,assistantController.getPendingDoctorRequests)
     router.post('/api/save-doctor-request',assistantController.saveDoctorRequest)
+    router.get('/api/get-list-patient',doctorController.getListPatient)
+    router.get('/api/back-data-after-send-remedy', doctorController.backDataAfterSendRemedy)
+    router.post('/api/post-histories',doctorController.postToHistories)
     app.use('/api/payment', PaymentRouter)
     return app.use('/', router)
 }

@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            Patient_Infor.hasOne(models.History, { foreignKey: 'patientId' })
         }
     }
     Patient_Infor.init(
