@@ -117,6 +117,18 @@ let getProfileDoctorById = async (req, res) => {
         })
     }
 }
+let getListPatient = async (req, res) => {
+    try {
+        let response = await doctorService.getListPatient(req.query.date);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log('getListPatient', e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 let getListPatientForDoctor = async (req, res) => {
     try {
@@ -208,4 +220,5 @@ module.exports = {
     getListPatient:getListPatient,
     backDataAfterSendRemedy:backDataAfterSendRemedy,
     postToHistories:postToHistories,
+
 }

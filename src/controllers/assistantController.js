@@ -73,7 +73,6 @@ let getPendingDoctorRequests = async (req, res) => {
 let saveDoctorRequest = async (req, res) => {
     try {  
         const { id, data } = req.body;
-        console.log(id, data)
         // Kiểm tra xem id có tồn tại và không phải là undefined
         if (!id) {
             return res.status(400).json({
@@ -83,7 +82,7 @@ let saveDoctorRequest = async (req, res) => {
         }
             // Xử lý logic khi patientId hợp lệ
             let result = await assistantService.saveDoctorRequest(id,data);
-            console.log(result)
+
             return res.status(200).json(result);
     } catch (e) {
         return res.status(500).json({
