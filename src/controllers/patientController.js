@@ -84,5 +84,6 @@ module.exports = {
     sendComment: sendComment,
     getListCommentForPatient: getListCommentForPatient,
     getDetailPatientById: getDetailPatientById,
-    editDetailPatient: editDetailPatient
+    editDetailPatient: editDetailPatient,
+
 }

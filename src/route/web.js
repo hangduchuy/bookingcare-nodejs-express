@@ -6,6 +6,7 @@ import patientController from '../controllers/patientController'
 import specialtyController from '../controllers/specialtyController'
 import clinicController from '../controllers/clinicController'
 import handBookController from '../controllers/handBookController'
+import assistantController from '../controllers/assistantController'
 const PaymentRouter = require('./PaymentRouter')
 
 let router = express.Router()
@@ -58,6 +59,14 @@ let initWebRoutes = (app) => {
     router.get('/api/get-handbooks', handBookController.getAllHandbook)
     router.get('/api/get-detail-handbook-by-id', handBookController.getDetailHandbookById)
     router.get('/api/get-All-Customer', userController.getAllCustomer)
+    router.post(`/api/TSPT3`,assistantController.TSPT3)
+    router.post(`/api/TSPT4`,assistantController.TSPT4)
+    router.get('/api/get-list-patient-to-check',assistantController.getListPatientToCheck)
+    router.get(`/api/show-doctor-request`,assistantController.getPendingDoctorRequests)
+    router.post('/api/save-doctor-request',assistantController.saveDoctorRequest)
+    router.get('/api/get-list-patient',doctorController.getListPatient)
+    router.get('/api/back-data-after-send-remedy', doctorController.backDataAfterSendRemedy)
+    router.post('/api/post-histories',doctorController.postToHistories)
     app.use('/api/payment', PaymentRouter)
     return app.use('/', router)
 }

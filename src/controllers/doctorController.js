@@ -14,6 +14,18 @@ let getTopDoctorHome = async (req, res) => {
         })
     }
 }
+let getListPatient = async (req, res) => {
+    try {
+        let response = await doctorService.getListPatient(req.query.date);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log('getListPatient', e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 
 let getAllDoctors = async (req, res) => {
     try {
@@ -144,7 +156,43 @@ let getClinicDoctorById = async (req, res) => {
         })
     }
 }
+let backDataAfterSendRemedy = async (req, res) => {
+    try {
+        let response = await doctorService.backDataAfterSendRemedy(req.query.patientId)
+        return res.status(200).json(response)
+    } catch (e) {
+        console.log('backDataAfterSendRemedy', e)
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let postToHistories = async (req, res) => {
+    try {
+        
+        if (!req.body) {
+            return res.status(400).json({
+                errCode: 1,
+                errMessage: 'Missing query parameters'
+            });
+        }
 
+        let response = await doctorService.postToHistories(req.body);
+
+        if (response.errCode === 0) {
+            return res.status(200).json(response);
+        } else {
+            return res.status(500).json(response);
+        }
+    } catch (e) {
+        console.log('postToHistories', e);
+        return res.status(500).json({
+            errCode: -1,
+            errMessage: 'Internal server error'
+        });
+    }
+};
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -157,4 +205,7 @@ module.exports = {
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
     getClinicDoctorById: getClinicDoctorById,
+    getListPatient:getListPatient,
+    backDataAfterSendRemedy:backDataAfterSendRemedy,
+    postToHistories:postToHistories,
 }

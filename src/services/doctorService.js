@@ -2,6 +2,7 @@ import db from '../models'
 require('dotenv').config()
 import _ from 'lodash'
 import emailService from '../services/emailService'
+const { Op } = require('sequelize')
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 
@@ -406,7 +407,7 @@ let getListPatientForDoctor = (doctorId, date) => {
                 let data = await db.Booking.findAll({
                     where: {
                         doctorId: doctorId,
-                        statusId: 'S2',
+                        [Op.or]: [{ statusId: 'S2' }, { statusId: 'S3' }],
                         date: date
                     },
                     include: [
@@ -504,7 +505,158 @@ let getClinicDoctorById = (doctorId) => {
         }
     })
 }
+let getListPatient = (date) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let data = await db.Booking.findAll({
+                    where: {
+                        date: date,
+                        statusId: 'S2'
+                    },
+                    include: [
+                        {
+                            model: db.User,
+                            as: 'patientData',
+                            attributes: ['email', 'firstName', 'address', 'gender', 'phonenumber'],
+                            include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }]
+                        },
+                        {
+                            model: db.Allcode,
+                            as: 'timeTypeDataPatient',
+                            attributes: ['valueEn', 'valueVi']
+                        }
+                    ],
+                    raw: false,
+                    nest: true
+                })
 
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+let backDataAfterSendRemedy = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!inputId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+                return // Thêm return ở đây để kết thúc hàm khi thiếu tham số
+            } else {
+                let data = await db.Patient_Infor.findOne({
+                    where: {
+                        patientId: inputId
+                    },
+                    raw: false,
+                    nest: true
+                })
+
+                if (!data) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'Patient information not found'
+                    })
+                    return // Thêm return ở đây để kết thúc hàm khi không tìm thấy dữ liệu bệnh nhân
+                }
+                let historyData = await db.History.findOne({
+                    where: {
+                        patientId: inputId
+                    },
+                    raw: false,
+                    nest: true
+                })
+                if (!historyData) {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Cant find patientId in History'
+                    })
+                    return
+                }
+                let historyUpdateData = ''
+                let statusUpdateData=''
+                if(data.statusUpdate==null){
+                    statusUpdateData=statusUpdateData
+                }else{statusUpdateData = data.statusUpdate}
+                
+                if (historyData.description === null) {
+                    historyUpdateData = statusUpdateData
+                } else {
+                    historyUpdateData = historyData.description + '\n' + statusUpdateData
+                }
+                await data.update({ doctorRequest: null, statusUpdate: null, reason: null })
+                await historyData.update({
+                    description: historyUpdateData
+                })
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Back infor patient succeed!'
+                })
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+let postToHistories = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            
+            if (!data) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+                return
+            }
+            let result= await db.History.findOne({
+                where:{
+                    patientId:data.patientId
+                },
+                raw:false,
+                nest: true
+            })
+            if(result){
+                result.description=data.description;
+                if(data.files==''){
+                    result.files=null;
+                }else{
+                    result.files=data.files;
+                }
+                
+                await result.save();
+            }else{
+                const maxId = await db.History.max('id')
+                const newId = maxId + 1
+                await db.History.create({
+                id: newId,
+                patientId: data.patientId,
+                doctorId:data.doctorId,
+                description: data.description,
+                files: data.files
+            })}
+            
+            resolve({
+                errCode: 0,
+                errMessage: 'Save infor histories succeed!'
+            })
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -516,5 +668,8 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
-    getClinicDoctorById: getClinicDoctorById
+    getClinicDoctorById: getClinicDoctorById,
+    getListPatient: getListPatient,
+    backDataAfterSendRemedy: backDataAfterSendRemedy,
+    postToHistories: postToHistories
 }
