@@ -1,25 +1,13 @@
-import doctorService from '../services/doctorService';
+import doctorService from '../services/doctorService'
 
 let getTopDoctorHome = async (req, res) => {
-    let limit = req.query.limit;
-    if (!limit) limit = 10;
+    let limit = req.query.limit
+    if (!limit) limit = 10
     try {
-        let response = await doctorService.getTopDoctorHome(+limit);
-        return res.status(200).json(response);
+        let response = await doctorService.getTopDoctorHome(+limit)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getTopDoctorHome', e)
-        return res.status(200).json({
-            errCode: -1,
-            errMessage: 'Error from server'
-        })
-    }
-}
-let getListPatient = async (req, res) => {
-    try {
-        let response = await doctorService.getListPatient(req.query.date);
-        return res.status(200).json(response);
-    } catch (e) {
-        console.log('getListPatient', e)
         return res.status(200).json({
             errCode: -1,
             errMessage: 'Error from server'
@@ -29,8 +17,8 @@ let getListPatient = async (req, res) => {
 
 let getAllDoctors = async (req, res) => {
     try {
-        let response = await doctorService.getAllDoctors();
-        return res.status(200).json(response);
+        let response = await doctorService.getAllDoctors()
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getAllDoctors', e)
         return res.status(200).json({
@@ -42,8 +30,8 @@ let getAllDoctors = async (req, res) => {
 
 let postInforDoctor = async (req, res) => {
     try {
-        let response = await doctorService.saveDetailInforDoctor(req.body);
-        return res.status(200).json(response);
+        let response = await doctorService.saveDetailInforDoctor(req.body)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('postInforDoctor', e)
         return res.status(200).json({
@@ -55,8 +43,8 @@ let postInforDoctor = async (req, res) => {
 
 let getDetailDoctorById = async (req, res) => {
     try {
-        let response = await doctorService.getDetailDoctorByIdService(req.query.id);
-        return res.status(200).json(response);
+        let response = await doctorService.getDetailDoctorByIdService(req.query.id)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getDetailDoctorById', e)
         return res.status(200).json({
@@ -68,8 +56,8 @@ let getDetailDoctorById = async (req, res) => {
 
 let bulkCreateSchedule = async (req, res) => {
     try {
-        let response = await doctorService.bulkCreateSchedule(req.body);
-        return res.status(200).json(response);
+        let response = await doctorService.bulkCreateSchedule(req.body)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('bulkCreateSchedule', e)
         return res.status(200).json({
@@ -81,8 +69,8 @@ let bulkCreateSchedule = async (req, res) => {
 
 let getScheduleByDate = async (req, res) => {
     try {
-        let response = await doctorService.getScheduleByDate(req.query.doctorId, req.query.date);
-        return res.status(200).json(response);
+        let response = await doctorService.getScheduleByDate(req.query.doctorId, req.query.date)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getScheduleByDate', e)
         return res.status(200).json({
@@ -94,8 +82,8 @@ let getScheduleByDate = async (req, res) => {
 
 let getExtraInforDoctorById = async (req, res) => {
     try {
-        let response = await doctorService.getExtraInforDoctorById(req.query.doctorId);
-        return res.status(200).json(response);
+        let response = await doctorService.getExtraInforDoctorById(req.query.doctorId)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getExtraInforDoctorById', e)
         return res.status(200).json({
@@ -107,8 +95,8 @@ let getExtraInforDoctorById = async (req, res) => {
 
 let getProfileDoctorById = async (req, res) => {
     try {
-        let response = await doctorService.getProfileDoctorById(req.query.doctorId);
-        return res.status(200).json(response);
+        let response = await doctorService.getProfileDoctorById(req.query.doctorId)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getProfileDoctorById', e)
         return res.status(200).json({
@@ -119,8 +107,8 @@ let getProfileDoctorById = async (req, res) => {
 }
 let getListPatient = async (req, res) => {
     try {
-        let response = await doctorService.getListPatient(req.query.date);
-        return res.status(200).json(response);
+        let response = await doctorService.getListPatient(req.query.date)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getListPatient', e)
         return res.status(200).json({
@@ -132,8 +120,8 @@ let getListPatient = async (req, res) => {
 
 let getListPatientForDoctor = async (req, res) => {
     try {
-        let response = await doctorService.getListPatientForDoctor(req.query.doctorId, req.query.date);
-        return res.status(200).json(response);
+        let response = await doctorService.getListPatientForDoctor(req.query.doctorId, req.query.date)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getListPatientForDoctor', e)
         return res.status(200).json({
@@ -145,8 +133,8 @@ let getListPatientForDoctor = async (req, res) => {
 
 let sendRemedy = async (req, res) => {
     try {
-        let response = await doctorService.sendRemedy(req.body);
-        return res.status(200).json(response);
+        let response = await doctorService.sendRemedy(req.body)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('sendRemedy', e)
         return res.status(200).json({
@@ -158,8 +146,8 @@ let sendRemedy = async (req, res) => {
 
 let getClinicDoctorById = async (req, res) => {
     try {
-        let response = await doctorService.getClinicDoctorById(req.query.doctorId);
-        return res.status(200).json(response);
+        let response = await doctorService.getClinicDoctorById(req.query.doctorId)
+        return res.status(200).json(response)
     } catch (e) {
         console.log('getClinicDoctorById', e)
         return res.status(200).json({
@@ -182,29 +170,28 @@ let backDataAfterSendRemedy = async (req, res) => {
 }
 let postToHistories = async (req, res) => {
     try {
-        
         if (!req.body) {
             return res.status(400).json({
                 errCode: 1,
                 errMessage: 'Missing query parameters'
-            });
+            })
         }
 
-        let response = await doctorService.postToHistories(req.body);
+        let response = await doctorService.postToHistories(req.body)
 
         if (response.errCode === 0) {
-            return res.status(200).json(response);
+            return res.status(200).json(response)
         } else {
-            return res.status(500).json(response);
+            return res.status(500).json(response)
         }
     } catch (e) {
-        console.log('postToHistories', e);
+        console.log('postToHistories', e)
         return res.status(500).json({
             errCode: -1,
             errMessage: 'Internal server error'
-        });
+        })
     }
-};
+}
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -217,8 +204,7 @@ module.exports = {
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
     getClinicDoctorById: getClinicDoctorById,
-    getListPatient:getListPatient,
-    backDataAfterSendRemedy:backDataAfterSendRemedy,
-    postToHistories:postToHistories,
-
+    getListPatient: getListPatient,
+    backDataAfterSendRemedy: backDataAfterSendRemedy,
+    postToHistories: postToHistories
 }

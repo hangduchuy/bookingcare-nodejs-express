@@ -3,6 +3,7 @@ require('dotenv').config()
 import _ from 'lodash'
 import emailService from '../services/emailService'
 const { Op } = require('sequelize')
+import moment from 'moment'
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE
 
@@ -289,6 +290,42 @@ let getScheduleByDate = (doctorId, date) => {
                     raw: false,
                     nest: true
                 })
+
+                // Kiểm tra xem thời gian hiện tại có sau thời gian của lịch khám không
+                if (date == moment().startOf('day').valueOf()) {
+                    let currentTime = moment().format('HH:mm')
+
+                    data = data.filter((item) => {
+                        let timeString = item.timeTypeData.valueVi.slice(0, 5)
+                        let scheduleTime = moment(timeString, 'HH:mm')
+                        // Now, compare only the time (hours and minutes)
+                        return scheduleTime.isAfter(moment(currentTime, 'HH:mm'))
+                    })
+                }
+
+                let dataExist = await db.Booking.findAll({
+                    where: {
+                        doctorId: doctorId,
+                        date: date,
+                        statusId: { [db.Sequelize.Op.not]: 'S1' }
+                    },
+                    raw: false,
+                    nest: true
+                })
+
+                // Xóa các mục trong 'data' có trùng với 'dataExist' dựa vào 'doctorId' và 'date'
+                if (dataExist.length > 0) {
+                    data = data.filter(
+                        (item) =>
+                            !dataExist.some(
+                                (existingItem) =>
+                                    existingItem.doctorId === item.doctorId &&
+                                    existingItem.date === item.date &&
+                                    existingItem.timeType === item.timeType
+                            )
+                    )
+                }
+
                 if (!data) data = []
 
                 resolve({
@@ -384,47 +421,6 @@ let getProfileDoctorById = (inputId) => {
                     data.image = Buffer.from(data.image, 'base64').toString('binary')
                 }
                 if (!data) data = {}
-                resolve({
-                    errCode: 0,
-                    data: data
-                })
-            }
-        } catch (e) {
-            reject(e)
-        }
-    })
-}
-let getListPatient = (date) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!date) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing parameter'
-                })
-            } else {
-                let data = await db.Booking.findAll({
-                    where: {
-                        date: date,
-                        statusId: 'S2'
-                    },
-                    include: [
-                        {
-                            model: db.User,
-                            as: 'patientData',
-                            attributes: ['email', 'firstName', 'address', 'gender', 'phonenumber'],
-                            include: [{ model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] }]
-                        },
-                        {
-                            model: db.Allcode,
-                            as: 'timeTypeDataPatient',
-                            attributes: ['valueEn', 'valueVi']
-                        }
-                    ],
-                    raw: false,
-                    nest: true
-                })
-
                 resolve({
                     errCode: 0,
                     data: data
@@ -627,11 +623,13 @@ let backDataAfterSendRemedy = (inputId) => {
                     return
                 }
                 let historyUpdateData = ''
-                let statusUpdateData=''
-                if(data.statusUpdate==null){
-                    statusUpdateData=statusUpdateData
-                }else{statusUpdateData = data.statusUpdate}
-                
+                let statusUpdateData = ''
+                if (data.statusUpdate == null) {
+                    statusUpdateData = statusUpdateData
+                } else {
+                    statusUpdateData = data.statusUpdate
+                }
+
                 if (historyData.description === null) {
                     historyUpdateData = statusUpdateData
                 } else {
@@ -654,7 +652,6 @@ let backDataAfterSendRemedy = (inputId) => {
 let postToHistories = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            
             if (!data) {
                 resolve({
                     errCode: 1,
@@ -662,33 +659,34 @@ let postToHistories = (data) => {
                 })
                 return
             }
-            let result= await db.History.findOne({
-                where:{
-                    patientId:data.patientId
+            let result = await db.History.findOne({
+                where: {
+                    patientId: data.patientId
                 },
-                raw:false,
+                raw: false,
                 nest: true
             })
-            if(result){
-                result.description=data.description;
-                if(data.files==''){
-                    result.files=null;
-                }else{
-                    result.files=data.files;
+            if (result) {
+                result.description = data.description
+                if (data.files == '') {
+                    result.files = null
+                } else {
+                    result.files = data.files
                 }
-                
-                await result.save();
-            }else{
+
+                await result.save()
+            } else {
                 const maxId = await db.History.max('id')
                 const newId = maxId + 1
                 await db.History.create({
-                id: newId,
-                patientId: data.patientId,
-                doctorId:data.doctorId,
-                description: data.description,
-                files: data.files
-            })}
-            
+                    id: newId,
+                    patientId: data.patientId,
+                    doctorId: data.doctorId,
+                    description: data.description,
+                    files: data.files
+                })
+            }
+
             resolve({
                 errCode: 0,
                 errMessage: 'Save infor histories succeed!'

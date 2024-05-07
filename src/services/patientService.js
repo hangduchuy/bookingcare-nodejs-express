@@ -223,18 +223,16 @@ let getDetailPatientById = (inputId) => {
                 let data = await db.Patient_Infor.findOne({
                     where: {
                         patientId: inputId
-                    }, include: [     
+                    },
+                    include: [
                         {
                             model: db.History,
-                            attributes: ['description', 'files'],
-                            
+                            attributes: ['description', 'files']
                         }
                     ],
                     raw: false,
                     nest: true
-                }
-            )
-            
+                })
                 resolve({
                     errCode: 0,
                     data: data
@@ -263,9 +261,9 @@ let editDetailPatient = (data) => {
                     // thêm -F để biết chưa xác nhận từ Hộ lí
                     let PendingDoctorRequest = data.doctorRequest.map((item) => item + '-F')
                     // kết thúc bằng '-T' đã hoàn thành và ko thay đổi
-                    let newDoctorRequests =[]
+                    let newDoctorRequests = []
                     if (patientInfor && patientInfor.doctorRequest) {
-                       newDoctorRequests = patientInfor.doctorRequest.filter((item) => item.includes('-T'));
+                        newDoctorRequests = patientInfor.doctorRequest.filter((item) => item.includes('-T'))
                         // Tiếp tục xử lý với biến newDoctorRequests đã được lọc
                     }
 
@@ -287,13 +285,11 @@ let editDetailPatient = (data) => {
     })
 }
 
-
 module.exports = {
     postBookAppointment: postBookAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
     sendComment: sendComment,
     getListCommentForPatient: getListCommentForPatient,
     getDetailPatientById: getDetailPatientById,
-    editDetailPatient: editDetailPatient,
-
+    editDetailPatient: editDetailPatient
 }
