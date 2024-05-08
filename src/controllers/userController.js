@@ -104,20 +104,8 @@ let search = async (req, res) => {
 }
 
 let totalMoney = async (req,res)=>{
-    let totalmoney=0.00;
     let results= await userService.getTotalMoney();
-    const valuesVi = [];
-
-for (let i = 0; i < results.length; i++) {
-    const innerArray = results[i];
-    for (let j = 0; j < innerArray.length; j++) {
-        const item = innerArray[j];
-        if (item.valueVi) {
-
-            totalmoney+=parseFloat(item.valueVi);
-        }
-    }
-}
+    console.log(results)
     if(results.length===0){
         res.json({
             errCode:1,
@@ -125,42 +113,60 @@ for (let i = 0; i < results.length; i++) {
         })
     }
     else{
-        res.json(totalmoney);
+        
+        res.json(results);
     }
 }
 
 let dataForBarChart = async (req, res) => {
-    let dataChart = Array(12).fill(0);
-    let results = await userService.totalMoneyOnMonthPerYear();
-    if (results.length === 0) {
-        res.json({
-            errCode: 1,
-            errMessage: 'Data can\'t load'
-        });
-        return; // Exit the function early if there's no data
-    }
-    else{
-        for(let i=0;i<results.length;i++){
-            let inArray=results[i].date;
-            let dateString=moment(parseInt(inArray)).format('L'); 
+    try {
+        let results = await userService.totalMoneyOnMonthPerYear();
+        if (results.length === 0) {
+            res.json({
+                errCode: 1,
+                errMessage: 'Data can\'t load'
+            });
+            return; // Exit the function early if there's no data
+        }
+
+        // Initialize a Map to store data for each year
+        let dataByYear = new Map();
+
+        // Iterate through the results and categorize data by year
+        for (let i = 0; i < results.length; i++) {
+            let inArray = results[i].date;
+            let dateString = moment(parseInt(inArray)).format('L');
             const parts = dateString.split('/');
             if (parts.length === 3) {
-                // Rearrange the parts to create the desired format 'yyyy/mm/dd'
                 const yyyy = parts[2];
                 const dd = parts[1];
                 const mm = parts[0];
                 const formattedDate = `${yyyy}/${mm}/${dd}`;
-                let date = new Date(formattedDate); // Convert the formatted date string to a Date object
-                let month = date.getMonth();
-                if (dataChart[month] === undefined) {
-                    dataChart[month] = 0;
-                }
-                dataChart[month] += 1;
+                let date = new Date(formattedDate);
+                let year = date.getFullYear();
                 
+                if (!dataByYear.has(year)) {
+                    dataByYear.set(year, Array(12).fill(0));
+                }
+
+                let month = date.getMonth();
+                dataByYear.get(year)[month]++;
+            }
         }
-        
-    }
+
+        // Convert Map to JSON format
+        let dataChart = {};
+        for (let [year, values] of dataByYear) {
+            dataChart[year] = values;
+        }
+
         res.json(dataChart);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            errCode: 500,
+            errMessage: 'Internal server error'
+        });
     }
 }
 let getAllCustomer = async (req, res) => {
@@ -173,6 +179,7 @@ let getAllCustomer = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while counting customers.' });
     }
 }
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,

@@ -3,6 +3,7 @@ import db from '../models/index'
 import bcrypt from 'bcryptjs'
 import moment from 'moment'
 const { Sequelize } = require('sequelize')
+
 var salt = bcrypt.genSaltSync(10)
 
 let hashUserPassword = (password) => {
@@ -272,36 +273,54 @@ let searchSpecialty = (name) => {
     })
 }
 
-let getTotalMoney = () => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let res = []
-            let bookingResults = await db.Booking.findAll()
-
-            if (bookingResults.length > 0) {
-                for (let i = 0; i < bookingResults.length; i++) {
-                    const booking = bookingResults[i]
-                    if (booking.priceId !== undefined) {
+let getTotalMoney = async () => {
+    try {
+        let bookingResults = await db.Booking.findAll();
+        if (bookingResults.length > 0) {
+            let moneyByYear = new Map(); // Khởi tạo Map để lưu trữ dữ liệu theo từng năm
+            for (let i = 0; i < bookingResults.length; i++) {
+                const booking = bookingResults[i];
+                if (booking.priceId !== undefined) {
+                    let inArray = booking.date;
+                    let dateString = moment(parseInt(inArray)).format('L');
+                    const parts = dateString.split('/');
+                    if (parts.length === 3) {
+                        const yyyy = parts[2];
+                        const dd = parts[1];
+                        const mm = parts[0];
+                        const formattedDate = `${yyyy}/${mm}/${dd}`;
+                        let date = new Date(formattedDate);
+                        let year = date.getFullYear();
+                        if (!moneyByYear.has(year)) {
+                            moneyByYear.set(year, 0);
+                        }
                         let results = await db.Allcode.findAll({
                             where: { key: booking.priceId },
-                            attributes: ['valueVi'] // Chỉ lấy trường 'valueEn'
-                        })
-
-                        res.push(results)
+                            attributes: ['valueVi'] // Chỉ lấy trường 'valueVi'
+                        });
+                        // Tính tổng các giá trị 'valueVi' và cộng vào moneyByYear cho từng năm
+                        let sum = results.reduce((total, current) => total + parseFloat(current.valueVi), 0);
+                        moneyByYear.set(year, moneyByYear.get(year) + sum);
                     } else {
-                        resolve('Data is empty')
-                        return // Dừng vòng lặp nếu có lỗi
+                        return 'Invalid date format';
                     }
+                } else {
+                    return 'Data is empty';
                 }
-                resolve(res)
-            } else {
-                resolve('Booking data is empty')
             }
-        } catch (e) {
-            reject(e)
+            // Chuyển đổi Map thành một đối tượng JavaScript
+            let obj = Object.fromEntries(moneyByYear);
+            // Chuyển đối tượng JavaScript thành chuỗi JSON
+            let jsonString = JSON.stringify(obj);
+            return jsonString;
+        } else {
+            return 'Booking data is empty';
         }
-    })
-}
+    } catch (e) {
+        throw new Error(e);
+    }
+};
+
 
 let totalMoneyOnMonthPerYear = () => {
     return new Promise(async (resolve, reject) => {
