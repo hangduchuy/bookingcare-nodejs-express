@@ -1,15 +1,15 @@
-import connectDB from "../config/connectDB";
-import db from "../models/index";
-import bcrypt from 'bcryptjs';
+import connectDB from '../config/connectDB'
+import db from '../models/index'
+import bcrypt from 'bcryptjs'
 import moment from 'moment'
-const { Sequelize} = require('sequelize');
-var salt = bcrypt.genSaltSync(10);
+const { Sequelize } = require('sequelize')
+var salt = bcrypt.genSaltSync(10)
 
 let hashUserPassword = (password) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let hasPassword = await bcrypt.hashSync(password, salt);
-            resolve(hasPassword);
+            let hasPassword = await bcrypt.hashSync(password, salt)
+            resolve(hasPassword)
         } catch (e) {
             reject(e)
         }
@@ -19,39 +19,38 @@ let hashUserPassword = (password) => {
 let handleUserLogin = (email, password) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let userData = {};
-            let isExist = await checkUserEmail(email);
+            let userData = {}
+            let isExist = await checkUserEmail(email)
             if (isExist) {
                 let user = await db.User.findOne({
                     attributes: ['id', 'email', 'roleId', 'password', 'firstName', 'lastName'],
                     where: { email: email },
-                    raw: true,
-                });
+                    raw: true
+                })
                 if (user) {
-                    let check = await bcrypt.compareSync(password, user.password);
+                    let check = await bcrypt.compareSync(password, user.password)
                     if (check) {
-                        userData.errCode = 0;
-                        userData.errMessage = `OK`;
+                        userData.errCode = 0
+                        userData.errMessage = `OK`
 
-                        delete user.password;
-                        userData.user = user;
+                        delete user.password
+                        userData.user = user
                     } else {
-                        userData.errCode = 3;
-                        userData.errMessage = `Wrong password`;
+                        userData.errCode = 3
+                        userData.errMessage = `Wrong password`
                     }
                 } else {
-                    userData.errCode = 2;
+                    userData.errCode = 2
                     userData.errMessage = `User's not found`
                 }
-
             } else {
-                userData.errCode = 1;
+                userData.errCode = 1
                 userData.errMessage = `Your's Email isn't exist in your system. Plz try other email!`
             }
 
             resolve(userData)
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -68,7 +67,7 @@ let checkUserEmail = (userEmail) => {
                 resolve(false)
             }
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -76,7 +75,7 @@ let checkUserEmail = (userEmail) => {
 let getAllUsers = (userId) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let users = '';
+            let users = ''
             if (userId === 'ALL') {
                 users = await db.User.findAll({
                     attributes: {
@@ -95,7 +94,7 @@ let getAllUsers = (userId) => {
 
             resolve(users)
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -104,34 +103,67 @@ let createNewUser = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             //check email is exist ???
-            let check = await checkUserEmail(data.email);
-            if (check === true) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Your email is already in used, Plz try another email!!'
+            if (Array.isArray(data)) {
+                // If data is an array of objects
+                const promises = data.map(async (item) => {
+                    let check = await checkUserEmail(item.email)
+                    if (check === true) {
+                        resolve({
+                            errCode: 1,
+                            errMessage: 'Your email is already in used, Plz try another email!!'
+                        })
+                    } else {
+                        // let hasPasswordFromBcrypt = await hashUserPassword(item.password)
+                        const newUser = await db.User.create({
+                            email: item.email,
+                            // password: hasPasswordFromBcrypt,
+                            firstName: item.firstName,
+                            lastName: item.lastName,
+                            address: item.address
+                            // phonenumber: item.phonenumber,
+                            // gender: item.gender,
+                            // roleId: item.roleId,
+                            // positionId: item.positionId,
+                            // image: item.avatar
+                        })
+                        console.log('newUser', newUser)
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'OK'
+                        })
+                    }
                 })
             } else {
-                let hasPasswordFromBcrypt = await hashUserPassword(data.password);
-                await db.User.create({
-                    email: data.email,
-                    password: hasPasswordFromBcrypt,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    address: data.address,
-                    phonenumber: data.phonenumber,
-                    gender: data.gender,
-                    roleId: data.roleId,
-                    positionId: data.positionId,
-                    image: data.avatar
-                })
+                // If data is a single object
+                let check = await checkUserEmail(data.email)
+                if (check === true) {
+                    resolve({
+                        errCode: 1,
+                        errMessage: 'Your email is already in used, Plz try another email!!'
+                    })
+                } else {
+                    let hasPasswordFromBcrypt = await hashUserPassword(data.password)
 
-                resolve({
-                    errCode: 0,
-                    errMessage: 'OK'
-                })
+                    await db.User.create({
+                        email: data.email,
+                        password: hasPasswordFromBcrypt,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        address: data.address,
+                        phonenumber: data.phonenumber,
+                        gender: data.gender,
+                        roleId: data.roleId,
+                        positionId: data.positionId,
+                        image: data.avatar
+                    })
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'OK'
+                    })
+                }
             }
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -150,7 +182,7 @@ let deleteUser = (userId) => {
 
         await db.User.destroy({
             where: { id: userId }
-        });
+        })
 
         resolve({
             errCode: 0,
@@ -173,18 +205,18 @@ let updateUserData = (data) => {
                 raw: false
             })
             if (user) {
-                user.firstName = data.firstName;
-                user.lastName = data.lastName;
-                user.address = data.address;
-                user.roleId = data.roleId;
-                user.positionId = data.positionId;
-                user.gender = data.gender;
-                user.phonenumber = data.phonenumber;
+                user.firstName = data.firstName
+                user.lastName = data.lastName
+                user.address = data.address
+                user.roleId = data.roleId
+                user.positionId = data.positionId
+                user.gender = data.gender
+                user.phonenumber = data.phonenumber
                 if (data.avatar) {
-                    user.image = data.avatar;
+                    user.image = data.avatar
                 }
 
-                await user.save();
+                await user.save()
                 resolve({
                     errCode: 0,
                     errMessage: 'Update the user suceeds!'
@@ -193,10 +225,10 @@ let updateUserData = (data) => {
                 resolve({
                     errCode: 1,
                     errMessage: `User's not found!`
-                });
+                })
             }
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
@@ -210,90 +242,84 @@ let getAllCodeService = (typeInput) => {
                     errMessage: 'Missing required parameters'
                 })
             } else {
-                let res = {};
+                let res = {}
                 let allcode = await db.Allcode.findAll({
                     where: { type: typeInput }
-                });
-                res.errCode = 0;
-                res.data = allcode;
-                resolve(res);
+                })
+                res.errCode = 0
+                res.data = allcode
+                resolve(res)
             }
         } catch (e) {
-            reject(e);
+            reject(e)
         }
     })
 }
 let searchSpecialty = (name) => {
-    return new Promise(async(resolve,reject)=>{
+    return new Promise(async (resolve, reject) => {
         try {
             let results = await db.Specialty.findAll({
-              where: {
-                name: {
-                  [Sequelize.Op.like]: `%${name}%`,
-                },
-              },
-            });
-            resolve(results);
-        }
-        catch(e){
-            reject(e);
+                where: {
+                    name: {
+                        [Sequelize.Op.like]: `%${name}%`
+                    }
+                }
+            })
+            resolve(results)
+        } catch (e) {
+            reject(e)
         }
     })
 }
-  
+
 let getTotalMoney = () => {
     return new Promise(async (resolve, reject) => {
-      try {
-        let res =[];
-        let bookingResults = await db.Booking.findAll();
-  
-        if (bookingResults.length > 0) {
-          for (let i = 0; i < bookingResults.length; i++) {
-            const booking = bookingResults[i];
-            if (booking.priceId !== undefined) {
-              let results = await db.Allcode.findAll({
-                where: { key: booking.priceId },
-                attributes: ['valueVi'], // Chỉ lấy trường 'valueEn'
-              });
-  
-  
-              res.push(results);
-            } else {
-              resolve('Data is empty'
-              );
-              return; // Dừng vòng lặp nếu có lỗi
-            }
-          }
-          resolve(res);
-        } else {
-          resolve('Booking data is empty'
-          );
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
+        try {
+            let res = []
+            let bookingResults = await db.Booking.findAll()
 
-let totalMoneyOnMonthPerYear=()=>{
-    return new Promise(async (resolve,reject)=>{
-        try{
-            let results=await db.Booking.findAll();
-            resolve(results)
-        }
-        catch{
-            reject(e);
+            if (bookingResults.length > 0) {
+                for (let i = 0; i < bookingResults.length; i++) {
+                    const booking = bookingResults[i]
+                    if (booking.priceId !== undefined) {
+                        let results = await db.Allcode.findAll({
+                            where: { key: booking.priceId },
+                            attributes: ['valueVi'] // Chỉ lấy trường 'valueEn'
+                        })
+
+                        res.push(results)
+                    } else {
+                        resolve('Data is empty')
+                        return // Dừng vòng lặp nếu có lỗi
+                    }
+                }
+                resolve(res)
+            } else {
+                resolve('Booking data is empty')
+            }
+        } catch (e) {
+            reject(e)
         }
     })
 }
-let getTotalCustomer=()=>{
-    return new Promise(async (resolve,reject)=>{
-        try{
-            let results=await db.Booking.findAll();
+
+let totalMoneyOnMonthPerYear = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let results = await db.Booking.findAll()
             resolve(results)
+        } catch {
+            reject(e)
         }
-        catch{
-            reject(e);
+    })
+}
+let getTotalCustomer = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let results = await db.Booking.findAll()
+            resolve(results)
+        } catch {
+            reject(e)
         }
     })
 }
@@ -304,8 +330,8 @@ module.exports = {
     deleteUser: deleteUser,
     updateUserData: updateUserData,
     getAllCodeService: getAllCodeService,
-    searchSpecialty:searchSpecialty,
-    getTotalMoney:getTotalMoney,
-    totalMoneyOnMonthPerYear:totalMoneyOnMonthPerYear,
-    getTotalCustomer:getTotalCustomer,
+    searchSpecialty: searchSpecialty,
+    getTotalMoney: getTotalMoney,
+    totalMoneyOnMonthPerYear: totalMoneyOnMonthPerYear,
+    getTotalCustomer: getTotalCustomer
 }

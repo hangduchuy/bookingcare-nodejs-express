@@ -61,7 +61,8 @@ let postBookAppointment = (data) => {
                             patientId: user[0].id,
                             date: data.date,
                             timeType: data.timeType,
-                            token: token
+                            token: token,
+                            priceId: data.priceId
                         }
                     })
 
@@ -145,8 +146,7 @@ let sendComment = (data) => {
                     //         attributes: ['patientId']
                     //     },
                     // ],
-                    raw: false,
-                    nest: true
+                    raw: false
                 })
 
                 //search status
