@@ -127,7 +127,6 @@ let createNewUser = (data) => {
                             // positionId: item.positionId,
                             // image: item.avatar
                         })
-                        console.log('newUser', newUser)
                         resolve({
                             errCode: 0,
                             errMessage: 'OK'

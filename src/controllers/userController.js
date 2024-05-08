@@ -1,10 +1,10 @@
-import userService from "../services/userService";
-import db from "../models/index";
+import userService from '../services/userService'
+import db from '../models/index'
 import moment from 'moment'
-const { Sequelize} = require('sequelize');
+const { Sequelize } = require('sequelize')
 let handleLogin = async (req, res) => {
-    let email = req.body.email;
-    let password = req.body.password;
+    let email = req.body.email
+    let password = req.body.password
 
     if (!email || !password) {
         return res.status(500).json({
@@ -13,7 +13,7 @@ let handleLogin = async (req, res) => {
         })
     }
 
-    let userData = await userService.handleUserLogin(email, password);
+    let userData = await userService.handleUserLogin(email, password)
 
     return res.status(200).json({
         errCode: userData.errCode,
@@ -23,7 +23,7 @@ let handleLogin = async (req, res) => {
 }
 
 let handleGetAllUsers = async (req, res) => {
-    let id = req.query.id;
+    let id = req.query.id
 
     if (!id) {
         return res.status(200).json({
@@ -32,7 +32,7 @@ let handleGetAllUsers = async (req, res) => {
         })
     }
 
-    let users = await userService.getAllUsers(id);
+    let users = await userService.getAllUsers(id)
 
     return res.status(200).json({
         errCode: 0,
@@ -42,14 +42,13 @@ let handleGetAllUsers = async (req, res) => {
 }
 
 let handleCreateNewUser = async (req, res) => {
-    let message = await userService.createNewUser(req.body);
-    console.log(message);
-    return res.status(200).json(message);
+    let message = await userService.createNewUser(req.body)
+    return res.status(200).json(message)
 }
 
 let handleEditUser = async (req, res) => {
-    let data = req.body;
-    let message = await userService.updateUserData(data);
+    let data = req.body
+    let message = await userService.updateUserData(data)
     return res.status(200).json(message)
 }
 
@@ -60,14 +59,14 @@ let handleDeleteUser = async (req, res) => {
             errMessage: 'Missing required parameters!'
         })
     }
-    let message = await userService.deleteUser(req.body.id);
-    return res.status(200).json(message);
+    let message = await userService.deleteUser(req.body.id)
+    return res.status(200).json(message)
 }
 
 let getAllcode = async (req, res) => {
     try {
-        let data = await userService.getAllCodeService(req.query.type);
-        return res.status(200).json(data);
+        let data = await userService.getAllCodeService(req.query.type)
+        return res.status(200).json(data)
     } catch (e) {
         console.log('Get all code', e)
         return res.status(200).json({
@@ -86,97 +85,93 @@ let getAllcode = async (req, res) => {
 //         errMessage: 'OK',
 //         result,
 //     })
-   
+
 // }
 let search = async (req, res) => {
-    let name = req.query.name;
-    let results= {};
-    results= await userService.searchSpecialty(name);
+    let name = req.query.name
+    let results = {}
+    results = await userService.searchSpecialty(name)
     if (results.length === 0) {
         res.json({
-          errCode: 1,
-          errMessage: `Keyword not found!`
-        });
-      } else {
-        res.json(results);
-      }
-    
+            errCode: 1,
+            errMessage: `Keyword not found!`
+        })
+    } else {
+        res.json(results)
+    }
 }
 
-let totalMoney = async (req,res)=>{
-    let results= await userService.getTotalMoney();
-    console.log(results)
-    if(results.length===0){
+let totalMoney = async (req, res) => {
+    let results = await userService.getTotalMoney()
+    if (results.length === 0) {
         res.json({
-            errCode:1,
-            errMessage:'Data can`t load'
+            errCode: 1,
+            errMessage: 'Data can`t load'
         })
-    }
-    else{
-        
-        res.json(results);
+    } else {
+        res.json(results)
     }
 }
 
 let dataForBarChart = async (req, res) => {
     try {
-        let results = await userService.totalMoneyOnMonthPerYear();
+        let results = await userService.totalMoneyOnMonthPerYear()
         if (results.length === 0) {
             res.json({
                 errCode: 1,
-                errMessage: 'Data can\'t load'
-            });
-            return; // Exit the function early if there's no data
+                errMessage: "Data can't load"
+            })
+            return // Exit the function early if there's no data
         }
 
         // Initialize a Map to store data for each year
-        let dataByYear = new Map();
+        let dataByYear = new Map()
 
         // Iterate through the results and categorize data by year
         for (let i = 0; i < results.length; i++) {
-            let inArray = results[i].date;
-            let dateString = moment(parseInt(inArray)).format('L');
-            const parts = dateString.split('/');
+            let inArray = results[i].date
+            let dateString = moment(parseInt(inArray)).format('L')
+            const parts = dateString.split('/')
             if (parts.length === 3) {
-                const yyyy = parts[2];
-                const dd = parts[1];
-                const mm = parts[0];
-                const formattedDate = `${yyyy}/${mm}/${dd}`;
-                let date = new Date(formattedDate);
-                let year = date.getFullYear();
-                
+                const yyyy = parts[2]
+                const dd = parts[1]
+                const mm = parts[0]
+                const formattedDate = `${yyyy}/${mm}/${dd}`
+                let date = new Date(formattedDate)
+                let year = date.getFullYear()
+
                 if (!dataByYear.has(year)) {
-                    dataByYear.set(year, Array(12).fill(0));
+                    dataByYear.set(year, Array(12).fill(0))
                 }
 
-                let month = date.getMonth();
-                dataByYear.get(year)[month]++;
+                let month = date.getMonth()
+                dataByYear.get(year)[month]++
             }
         }
 
         // Convert Map to JSON format
-        let dataChart = {};
+        let dataChart = {}
         for (let [year, values] of dataByYear) {
-            dataChart[year] = values;
+            dataChart[year] = values
         }
 
-        res.json(dataChart);
+        res.json(dataChart)
     } catch (error) {
-        console.error(error);
+        console.error(error)
         res.status(500).json({
             errCode: 500,
             errMessage: 'Internal server error'
-        });
+        })
     }
 }
 let getAllCustomer = async (req, res) => {
     try {
-        const results = await userService.getTotalCustomer();
-        const count = results.length;
+        const results = await userService.getTotalCustomer()
+        const count = results.length
 
-        res.json({ count: count });
+        res.json({ count: count })
     } catch (error) {
-        res.status(500).json({ error: 'An error occurred while counting customers.' });
+        res.status(500).json({ error: 'An error occurred while counting customers.' })
     }
 }
 
@@ -187,8 +182,8 @@ module.exports = {
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
     getAllcode: getAllcode,
-    search:search,
-    totalMoney:totalMoney,
-    dataForBarChart:dataForBarChart,
-    getAllCustomer:getAllCustomer,
+    search: search,
+    totalMoney: totalMoney,
+    dataForBarChart: dataForBarChart,
+    getAllCustomer: getAllCustomer
 }
