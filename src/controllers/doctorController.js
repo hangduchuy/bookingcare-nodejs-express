@@ -158,7 +158,7 @@ let getClinicDoctorById = async (req, res) => {
 }
 let backDataAfterSendRemedy = async (req, res) => {
     try {
-        let response = await doctorService.backDataAfterSendRemedy(req.query.patientId)
+        let response = await doctorService.backDataAfterSendRemedy(req.query.patientId,req.query.doctorId,req.query.date)
         return res.status(200).json(response)
     } catch (e) {
         console.log('backDataAfterSendRemedy', e)
@@ -192,6 +192,8 @@ let postToHistories = async (req, res) => {
         })
     }
 }
+
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -206,5 +208,6 @@ module.exports = {
     getClinicDoctorById: getClinicDoctorById,
     getListPatient: getListPatient,
     backDataAfterSendRemedy: backDataAfterSendRemedy,
-    postToHistories: postToHistories
+    postToHistories: postToHistories,
+
 }

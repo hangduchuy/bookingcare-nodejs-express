@@ -444,7 +444,7 @@ let getListPatientForDoctor = (doctorId, date) => {
                 let data = await db.Booking.findAll({
                     where: {
                         doctorId: doctorId,
-                        [Op.or]: [{ statusId: 'S2' }, { statusId: 'S3' }],
+                        [Op.or]: [{ statusId: 'S2' }, { statusId: 'S3' },{ statusId: 'S4' }],
                         date: date
                     },
                     include: [
@@ -478,6 +478,7 @@ let getListPatientForDoctor = (doctorId, date) => {
 let sendRemedy = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            
             if (!data.email || !data.doctorId || !data.patientId || !data.timeType) {
                 resolve({
                     errCode: 1,
@@ -583,25 +584,28 @@ let getListPatient = (date) => {
         }
     })
 }
-let backDataAfterSendRemedy = (inputId) => {
+let backDataAfterSendRemedy = (patientId,doctorId,date) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!inputId) {
+            
+            if (!patientId) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
                 return // Thêm return ở đây để kết thúc hàm khi thiếu tham số
             } else {
-                let data = await db.Patient_Infor.findOne({
+                
+                let res = await db.Patient_Infor.findOne({
                     where: {
-                        patientId: inputId
+                        patientId: patientId
+                        
                     },
                     raw: false,
                     nest: true
                 })
-
-                if (!data) {
+                console.log(res)
+                if (!res) {
                     resolve({
                         errCode: 2,
                         errMessage: 'Patient information not found'
@@ -610,35 +614,26 @@ let backDataAfterSendRemedy = (inputId) => {
                 }
                 let historyData = await db.History.findOne({
                     where: {
-                        patientId: inputId
+                        patientId: patientId,
+                        doctorId: doctorId,
+                        date:''+date
+                        
                     },
                     raw: false,
                     nest: true
                 })
+                
                 if (!historyData) {
                     resolve({
                         errCode: 3,
                         errMessage: 'Cant find patientId in History'
                     })
                     return
+                }else{
+                    historyData.description=res.statusUpdate
                 }
-                let historyUpdateData = ''
-                let statusUpdateData = ''
-                if (data.statusUpdate == null) {
-                    statusUpdateData = statusUpdateData
-                } else {
-                    statusUpdateData = data.statusUpdate
-                }
-
-                if (historyData.description === null) {
-                    historyUpdateData = statusUpdateData
-                } else {
-                    historyUpdateData = historyData.description + '\n' + statusUpdateData
-                }
-                await data.update({ doctorRequest: null, statusUpdate: null, reason: null })
-                await historyData.update({
-                    description: historyUpdateData
-                })
+                await historyData.save()
+                await res.update({ doctorRequest: null, statusUpdate: null, reason: null })
                 resolve({
                     errCode: 0,
                     errMessage: 'Back infor patient succeed!'
@@ -659,13 +654,17 @@ let postToHistories = (data) => {
                 })
                 return
             }
+
             let result = await db.History.findOne({
                 where: {
-                    patientId: data.patientId
+                    patientId: data.patientId,
+                    doctorId:data.doctorId,
+                    date: ''+data.date
                 },
                 raw: false,
                 nest: true
             })
+            
             if (result) {
                 result.description = data.description
                 if (data.files == '') {
@@ -683,7 +682,8 @@ let postToHistories = (data) => {
                     patientId: data.patientId,
                     doctorId: data.doctorId,
                     description: data.description,
-                    files: data.files
+                    files: data.files,
+                    date:data.date
                 })
             }
 
@@ -696,6 +696,8 @@ let postToHistories = (data) => {
         }
     })
 }
+
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -710,5 +712,6 @@ module.exports = {
     getClinicDoctorById: getClinicDoctorById,
     getListPatient: getListPatient,
     backDataAfterSendRemedy: backDataAfterSendRemedy,
-    postToHistories: postToHistories
+    postToHistories: postToHistories,
+
 }
