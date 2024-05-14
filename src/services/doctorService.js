@@ -290,16 +290,12 @@ let getScheduleByDate = (doctorId, date) => {
                     raw: false,
                     nest: true
                 })
-
                 // Kiểm tra xem thời gian hiện tại có sau thời gian của lịch khám không
-                if (date == moment().startOf('day').valueOf()) {
-                    let currentTime = moment().format('HH:mm')
-
+                if (date == moment().utcOffset('+07:00').startOf('day').valueOf()) {
+                    let currentTime = moment().utcOffset('+07:00').format('HH:mm')
                     data = data.filter((item) => {
-                        let timeString = item.timeTypeData.valueVi.slice(0, 5)
-                        let scheduleTime = moment(timeString, 'HH:mm')
-                        // Now, compare only the time (hours and minutes)
-                        return scheduleTime.isAfter(moment(currentTime, 'HH:mm'))
+                        let scheduleTime = item.timeTypeData.valueVi.slice(0, 5)
+                        return scheduleTime > currentTime
                     })
                 }
 

@@ -1,8 +1,9 @@
+import { at } from 'lodash'
 import connectDB from '../config/connectDB'
 import db from '../models/index'
 import bcrypt from 'bcryptjs'
 import moment from 'moment'
-const { Sequelize } = require('sequelize')
+const { Sequelize, Op } = require('sequelize')
 
 var salt = bcrypt.genSaltSync(10)
 
@@ -274,52 +275,51 @@ let searchSpecialty = (name) => {
 
 let getTotalMoney = async () => {
     try {
-        let bookingResults = await db.Booking.findAll();
+        let bookingResults = await db.Booking.findAll()
         if (bookingResults.length > 0) {
-            let moneyByYear = new Map(); // Khởi tạo Map để lưu trữ dữ liệu theo từng năm
+            let moneyByYear = new Map() // Khởi tạo Map để lưu trữ dữ liệu theo từng năm
             for (let i = 0; i < bookingResults.length; i++) {
-                const booking = bookingResults[i];
+                const booking = bookingResults[i]
                 if (booking.priceId !== undefined) {
-                    let inArray = booking.date;
-                    let dateString = moment(parseInt(inArray)).format('L');
-                    const parts = dateString.split('/');
+                    let inArray = booking.date
+                    let dateString = moment(parseInt(inArray)).format('L')
+                    const parts = dateString.split('/')
                     if (parts.length === 3) {
-                        const yyyy = parts[2];
-                        const dd = parts[1];
-                        const mm = parts[0];
-                        const formattedDate = `${yyyy}/${mm}/${dd}`;
-                        let date = new Date(formattedDate);
-                        let year = date.getFullYear();
+                        const yyyy = parts[2]
+                        const dd = parts[1]
+                        const mm = parts[0]
+                        const formattedDate = `${yyyy}/${mm}/${dd}`
+                        let date = new Date(formattedDate)
+                        let year = date.getFullYear()
                         if (!moneyByYear.has(year)) {
-                            moneyByYear.set(year, 0);
+                            moneyByYear.set(year, 0)
                         }
                         let results = await db.Allcode.findAll({
                             where: { key: booking.priceId },
                             attributes: ['valueVi'] // Chỉ lấy trường 'valueVi'
-                        });
+                        })
                         // Tính tổng các giá trị 'valueVi' và cộng vào moneyByYear cho từng năm
-                        let sum = results.reduce((total, current) => total + parseFloat(current.valueVi), 0);
-                        moneyByYear.set(year, moneyByYear.get(year) + sum);
+                        let sum = results.reduce((total, current) => total + parseFloat(current.valueVi), 0)
+                        moneyByYear.set(year, moneyByYear.get(year) + sum)
                     } else {
-                        return 'Invalid date format';
+                        return 'Invalid date format'
                     }
                 } else {
-                    return 'Data is empty';
+                    return 'Data is empty'
                 }
             }
             // Chuyển đổi Map thành một đối tượng JavaScript
-            let obj = Object.fromEntries(moneyByYear);
+            let obj = Object.fromEntries(moneyByYear)
             // Chuyển đối tượng JavaScript thành chuỗi JSON
-            let jsonString = JSON.stringify(obj);
-            return jsonString;
+            let jsonString = JSON.stringify(obj)
+            return jsonString
         } else {
-            return 'Booking data is empty';
+            return 'Booking data is empty'
         }
     } catch (e) {
-        throw new Error(e);
+        throw new Error(e)
     }
-};
-
+}
 
 let totalMoneyOnMonthPerYear = () => {
     return new Promise(async (resolve, reject) => {
@@ -331,6 +331,7 @@ let totalMoneyOnMonthPerYear = () => {
         }
     })
 }
+
 let getTotalCustomer = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -341,6 +342,90 @@ let getTotalCustomer = () => {
         }
     })
 }
+
+let getMostSpecialized = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Tính ngày bắt đầu của tuần hiện tại
+            const startOfWeek = moment().utcOffset('+07:00').startOf('week').toDate()
+
+            // Tính ngày kết thúc của tuần hiện tại
+            const endOfWeek = moment().utcOffset('+07:00').endOf('week').toDate()
+
+            // Truy vấn các booking trong khoảng thời gian từ startOfWeek đến endOfWeek
+            let results = await db.Booking.findAll({
+                where: {
+                    // Giả sử cột startDate là cột lưu thời gian bắt đầu của booking
+                    createdAt: {
+                        [Op.between]: [startOfWeek, endOfWeek]
+                    }
+                },
+                attributes: ['doctorId'],
+                include: [
+                    {
+                        model: db.Doctor_Infor,
+                        as: 'doctorDataSpecialty',
+                        attributes: ['specialtyId'],
+                        include: [{ model: db.Specialty, attributes: ['id', 'name'] }]
+                    },
+                    {
+                        model: db.Patient_Infor,
+                        as: 'patientDataReason',
+                        attributes: ['patientId', 'reason']
+                    }
+                ],
+                raw: false
+            })
+
+            // Khởi tạo một đối tượng để đếm số lần xuất hiện của mỗi chuyên khoa
+            let specialtiesCount = {}
+
+            let reasonsCount = {}
+
+            // Đếm số lần xuất hiện của mỗi chuyên khoa
+            results.forEach((result) => {
+                const specialtyName = result.doctorDataSpecialty.Specialty.name
+                if (specialtiesCount[specialtyName]) {
+                    specialtiesCount[specialtyName]++
+                } else {
+                    specialtiesCount[specialtyName] = 1
+                }
+            })
+
+            // Đếm số lần xuất hiện của mỗi lý do khám
+            results.forEach((result) => {
+                //////////////
+                const reasonName = result.patientDataReason.reason
+                if (reasonsCount[reasonName]) {
+                    reasonsCount[reasonName]++
+                } else {
+                    reasonsCount[reasonName] = 1
+                }
+            })
+
+            // Tìm chuyên khoa xuất hiện nhiều nhất
+            let mostSpecialized = Object.keys(specialtiesCount).reduce((a, b) =>
+                specialtiesCount[a] > specialtiesCount[b] ? a : b
+            )
+
+            // Tìm lý do khám xuất hiện nhiều nhất
+            let ReasonForExamination = Object.keys(reasonsCount).reduce((a, b) =>
+                reasonsCount[a] > reasonsCount[b] ? a : b
+            )
+
+            if (!mostSpecialized) mostSpecialized = 'Không có chuyên khoa nào'
+            if (!ReasonForExamination) ReasonForExamination = 'Không có lý do khám nào'
+
+            resolve({
+                errCode: 0,
+                data: { mostSpecialized, ReasonForExamination }
+            })
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -351,5 +436,6 @@ module.exports = {
     searchSpecialty: searchSpecialty,
     getTotalMoney: getTotalMoney,
     totalMoneyOnMonthPerYear: totalMoneyOnMonthPerYear,
-    getTotalCustomer: getTotalCustomer
+    getTotalCustomer: getTotalCustomer,
+    getMostSpecialized: getMostSpecialized
 }

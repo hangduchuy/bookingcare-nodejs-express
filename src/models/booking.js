@@ -1,7 +1,5 @@
-'use strict';
-const {
-    Model
-} = require('sequelize');
+'use strict'
+const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
     class Booking extends Model {
         /**
@@ -13,20 +11,33 @@ module.exports = (sequelize, DataTypes) => {
             // define association here
             Booking.belongsTo(models.User, { foreignKey: 'patientId', targetKey: 'id', as: 'patientData' })
             Booking.belongsTo(models.Allcode, { foreignKey: 'timeType', targetKey: 'key', as: 'timeTypeDataPatient' })
-            Booking.belongsTo(models.Allcode, { foreignKey: 'statusId', targetKey: 'key',as: 'patientStatusData' })
+            Booking.belongsTo(models.Allcode, { foreignKey: 'statusId', targetKey: 'key', as: 'patientStatusData' })
+            Booking.belongsTo(models.Doctor_Infor, {
+                foreignKey: 'doctorId',
+                targetKey: 'doctorId',
+                as: 'doctorDataSpecialty'
+            })
+            Booking.belongsTo(models.Patient_Infor, {
+                foreignKey: 'patientId',
+                targetKey: 'patientId',
+                as: 'patientDataReason'
+            })
         }
-    };
-    Booking.init({
-        statusId: DataTypes.STRING,
-        doctorId: DataTypes.INTEGER,
-        patientId: DataTypes.INTEGER,
-        date: DataTypes.STRING,
-        timeType: DataTypes.STRING,
-        token: DataTypes.STRING,
-        priceId:DataTypes.STRING,
-    }, {
-        sequelize,
-        modelName: 'Booking',
-    });
-    return Booking;
-};
+    }
+    Booking.init(
+        {
+            statusId: DataTypes.STRING,
+            doctorId: DataTypes.INTEGER,
+            patientId: DataTypes.INTEGER,
+            date: DataTypes.STRING,
+            timeType: DataTypes.STRING,
+            token: DataTypes.STRING,
+            priceId: DataTypes.STRING
+        },
+        {
+            sequelize,
+            modelName: 'Booking'
+        }
+    )
+    return Booking
+}

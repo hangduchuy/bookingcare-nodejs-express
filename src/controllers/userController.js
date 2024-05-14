@@ -175,6 +175,19 @@ let getAllCustomer = async (req, res) => {
     }
 }
 
+let getMostSpecialized = async (req, res) => {
+    try {
+        let data = await userService.getMostSpecialized()
+        return res.status(200).json(data)
+    } catch (e) {
+        console.log('getMostSpecialized', e)
+        return res.status(500).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     handleLogin: handleLogin,
     handleGetAllUsers: handleGetAllUsers,
@@ -185,5 +198,6 @@ module.exports = {
     search: search,
     totalMoney: totalMoney,
     dataForBarChart: dataForBarChart,
-    getAllCustomer: getAllCustomer
+    getAllCustomer: getAllCustomer,
+    getMostSpecialized: getMostSpecialized
 }

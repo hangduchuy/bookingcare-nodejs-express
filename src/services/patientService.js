@@ -66,16 +66,33 @@ let postBookAppointment = (data) => {
                         }
                     })
 
-                    let patient = await db.Patient_Infor.findOrCreate({
-                        where: {
-                            patientId: user[0].id
-                        },
-                        defaults: {
+                    // let patient = await db.Patient_Infor.findOrCreate({
+                    //     where: {
+                    //         patientId: user[0].id
+                    //     },
+                    //     defaults: {
+                    //         patientId: user[0].id,
+                    //         birthday: data.birthday,
+                    //         reason: data.reason
+                    //     }
+                    // })
+                    let patient = await db.Patient_Infor.findOne({
+                        where: { patientId: user[0].id },
+                        raw: false
+                    })
+                    if (patient) {
+                        //update
+                        // patient.birthday = data.birthday
+                        patient.reason = data.reason
+                        await patient.save()
+                    } else {
+                        //create
+                        await db.Patient_Infor.create({
                             patientId: user[0].id,
                             birthday: data.birthday,
                             reason: data.reason
-                        }
-                    })
+                        })
+                    }
                 }
                 resolve({
                     errCode: 0,

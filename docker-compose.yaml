@@ -20,7 +20,7 @@ services:
         environment:
             - DB_PORT=5432
             - DB_HOST=db
-            - URL_REACT=http://localhost
+            - URL_REACT=https://doctorcareha.me
             # - DB_HOST=host.docker.internal
         ports:
             - 8080:8080
