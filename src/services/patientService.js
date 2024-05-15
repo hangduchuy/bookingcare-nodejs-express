@@ -244,7 +244,7 @@ let getDetailPatientById = (inputId) => {
                     include: [
                         {
                             model: db.History,
-                            attributes: ['description', 'files']
+                            attributes: ['description', 'files', 'createdAt']
                         }
                     ],
                     raw: false,
