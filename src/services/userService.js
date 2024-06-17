@@ -168,27 +168,48 @@ let createNewUser = (data) => {
         }
     })
 }
-
 let deleteUser = (userId) => {
     return new Promise(async (resolve, reject) => {
-        let user = await db.User.findOne({
-            where: { id: userId }
-        })
-        if (!user) {
+        try {
+            let user = await db.User.findOne({
+                where: { id: userId }
+            })
+
+            if (!user) {
+                return resolve({
+                    errCode: 2,
+                    errMessage: `The user doesn't exist`
+                })
+            }
+            if (user.roleId === 'R2') {
+                await db.User.destroy({
+                    where: { id: userId }
+                })
+                await db.Doctor_Infor.destroy({ where: { doctorId: userId } })
+                await db.Markdown.destroy({ where: { doctorId: userId } })
+                await db.Comment.destroy({ where: { doctorId: userId } })
+                
+            } else {
+                await db.User.destroy({
+                    where: { id: userId }
+                })
+                await db.Booking.destroy({ where: { patientId: userId } })
+                await db.History.destroy({ where: { patientId: userId } })
+                await db.Patient_Infor.destroy({ where: { patientId: userId } })
+                
+            }
             resolve({
-                errCode: 2,
-                errMessage: `The user isn't exist`
+                errCode: 0,
+                errMessage: `The user is deleted`
+            })
+            
+        } catch (error) {
+            console.log('deleteUser error', error)
+            reject({
+                errCode: 1,
+                errMessage: 'There was an error deleting the user'
             })
         }
-
-        await db.User.destroy({
-            where: { id: userId }
-        })
-
-        resolve({
-            errCode: 0,
-            errMessage: `The user is deleted`
-        })
     })
 }
 
