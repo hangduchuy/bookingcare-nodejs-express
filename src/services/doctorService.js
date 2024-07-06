@@ -12,7 +12,7 @@ let getTopDoctorHome = (limitInput) => {
         try {
             let users = await db.User.findAll({
                 limit: limitInput,
-                where: { roleId: 'R2' },
+                where: { roleId: 'R2', [Op.or]: [{ isDeleted: false }, { isDeleted: null }] },
                 order: [['createdAt', 'DESC']],
                 attributes: {
                     exclude: ['password']
@@ -563,6 +563,11 @@ let getListPatient = (date) => {
                             model: db.Allcode,
                             as: 'timeTypeDataPatient',
                             attributes: ['valueEn', 'valueVi']
+                        },
+                        {
+                            model: db.User,
+                            as: 'doctorDataBooking',
+                            attributes: ['email', 'firstName', 'isDeleted']
                         }
                     ],
                     raw: false,

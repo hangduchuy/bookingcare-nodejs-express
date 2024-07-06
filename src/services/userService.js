@@ -82,6 +82,9 @@ let getAllUsers = (userId) => {
                 users = await db.User.findAll({
                     attributes: {
                         exclude: ['password']
+                    },
+                    where: {
+                        [Op.or]: [{ isDeleted: false }, { isDeleted: null }]
                     }
                 })
             }
@@ -172,7 +175,8 @@ let deleteUser = (userId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let user = await db.User.findOne({
-                where: { id: userId }
+                where: { id: userId },
+                raw: false
             })
 
             if (!user) {
@@ -182,27 +186,27 @@ let deleteUser = (userId) => {
                 })
             }
             if (user.roleId === 'R2') {
-                await db.User.destroy({
-                    where: { id: userId }
-                })
-                await db.Doctor_Infor.destroy({ where: { doctorId: userId } })
-                await db.Markdown.destroy({ where: { doctorId: userId } })
-                await db.Comment.destroy({ where: { doctorId: userId } })
-                
+                user.isDeleted = true
+                await user.save()
+                // await db.User.destroy({
+                //     where: { id: userId }
+                // })
+
+                // await db.Doctor_Infor.destroy({ where: { doctorId: userId } })
+                // await db.Markdown.destroy({ where: { doctorId: userId } })
+                // await db.Comment.destroy({ where: { doctorId: userId } })
             } else {
                 await db.User.destroy({
                     where: { id: userId }
                 })
-                await db.Booking.destroy({ where: { patientId: userId } })
-                await db.History.destroy({ where: { patientId: userId } })
-                await db.Patient_Infor.destroy({ where: { patientId: userId } })
-                
+                // await db.Booking.destroy({ where: { patientId: userId } })
+                // await db.History.destroy({ where: { patientId: userId } })
+                // await db.Patient_Infor.destroy({ where: { patientId: userId } })
             }
             resolve({
                 errCode: 0,
                 errMessage: `The user is deleted`
             })
-            
         } catch (error) {
             console.log('deleteUser error', error)
             reject({
@@ -397,6 +401,18 @@ let getMostSpecialized = () => {
                 ],
                 raw: false
             })
+
+            // Check if results is empty
+            if (results.length === 0) {
+                resolve({
+                    errCode: 0,
+                    data: {
+                        mostSpecialized: 'Không có chuyên khoa nào',
+                        ReasonForExamination: 'Không có lý do khám nào'
+                    }
+                })
+                return
+            }
 
             // Khởi tạo một đối tượng để đếm số lần xuất hiện của mỗi chuyên khoa
             let specialtiesCount = {}

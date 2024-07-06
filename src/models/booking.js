@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             Booking.belongsTo(models.User, { foreignKey: 'patientId', targetKey: 'id', as: 'patientData' })
+            Booking.belongsTo(models.User, { foreignKey: 'doctorId', targetKey: 'id', as: 'doctorDataBooking' })
             Booking.belongsTo(models.Allcode, { foreignKey: 'timeType', targetKey: 'key', as: 'timeTypeDataPatient' })
             Booking.belongsTo(models.Allcode, { foreignKey: 'statusId', targetKey: 'key', as: 'patientStatusData' })
             Booking.belongsTo(models.Doctor_Infor, {

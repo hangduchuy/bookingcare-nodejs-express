@@ -44,8 +44,6 @@ let initWebRoutes = (app) => {
     router.get('/api/get-list-patient', doctorController.getListPatient)
     router.post('/api/send-remedy', doctorController.sendRemedy)
     router.get('/api/get-clinic-doctor-by-id', doctorController.getClinicDoctorById)
-    router.get('/api/get-list-patient', doctorController.getListPatient)
-    router.get('/api/get-list-patient', doctorController.getListPatient)
     router.get('/api/back-data-after-send-remedy', doctorController.backDataAfterSendRemedy)
     router.post('/api/post-histories', doctorController.postToHistories)
 
